@@ -3,6 +3,7 @@ using System;
 using System.Drawing;
 using System.Windows;
 using System.Windows.Forms;
+using WirelessBatteryLevel.App.Helpers;
 using WirelessBatteryLevel.App.ViewModels;
 using WirelessBatteryLevel.Core.Interfaces;
 using WirelessBatteryLevel.Infrastructure.Battery;
@@ -55,6 +56,8 @@ namespace WirelessBatteryLevel.App
             var mainWindow = Services.GetRequiredService<MainWindow>();
 
             InitializeTrayIcon(mainWindow);
+
+            MemoryCleaner.TrimWorkingSet();
         }
 
         private void InitializeTrayIcon(MainWindow mainWindow)

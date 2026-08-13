@@ -11,6 +11,19 @@ namespace WirelessBatteryLevel.App.ViewModels
 {
     public class DeviceItemViewModel : INotifyPropertyChanged
     {
+        private static readonly Brush GreenStatusBrush = CreateFrozenBrush("#22C55E");
+        private static readonly Brush GrayBrush = CreateFrozenBrush("#6B7280");
+        private static readonly Brush GreenBatteryBrush = CreateFrozenBrush("#10B981");
+        private static readonly Brush YellowBatteryBrush = CreateFrozenBrush("#F59E0B");
+        private static readonly Brush RedBatteryBrush = CreateFrozenBrush("#EF4444");
+
+        private static Brush CreateFrozenBrush(string hex)
+        {
+            var brush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(hex));
+            brush.Freeze();
+            return brush;
+        }
+
         private DeviceStatus _status;
 
         public DeviceItemViewModel(DeviceStatus status)
@@ -18,6 +31,8 @@ namespace WirelessBatteryLevel.App.ViewModels
             _status = status;
             UpdateFromStatus(status);
         }
+
+        public string Key => !string.IsNullOrWhiteSpace(_status.Device.Address) ? _status.Device.Address : _status.Device.Id;
 
         public void Update(DeviceStatus status)
         {
@@ -32,9 +47,7 @@ namespace WirelessBatteryLevel.App.ViewModels
 
         public bool IsConnected => _status.Device.IsConnected;
 
-        public Brush StatusBrush => IsConnected
-            ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#22C55E")) // Green
-            : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#6B7280")); // Gray
+        public Brush StatusBrush => IsConnected ? GreenStatusBrush : GrayBrush;
 
         public string StatusTooltip => IsConnected ? "Connected" : "Disconnected";
 
@@ -50,21 +63,21 @@ namespace WirelessBatteryLevel.App.ViewModels
             {
                 if (!HasBattery || !BatteryLevel.HasValue)
                 {
-                    return new SolidColorBrush((Color)ColorConverter.ConvertFromString("#6B7280")); // Gray N/A
+                    return GrayBrush;
                 }
 
                 var level = BatteryLevel.Value;
                 if (level > 50)
                 {
-                    return new SolidColorBrush((Color)ColorConverter.ConvertFromString("#10B981")); // Green
+                    return GreenBatteryBrush;
                 }
                 else if (level >= 20)
                 {
-                    return new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F59E0B")); // Yellow
+                    return YellowBatteryBrush;
                 }
                 else
                 {
-                    return new SolidColorBrush((Color)ColorConverter.ConvertFromString("#EF4444")); // Red
+                    return RedBatteryBrush;
                 }
             }
         }

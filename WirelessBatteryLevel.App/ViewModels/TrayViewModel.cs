@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using WirelessBatteryLevel.App.Helpers;
 using WirelessBatteryLevel.Core.Models;
 using WirelessBatteryLevel.Infrastructure.Device;
 using Application = System.Windows.Application;
@@ -95,14 +96,45 @@ namespace WirelessBatteryLevel.App.ViewModels
                 .ThenBy(s => s.Device.Name)
                 .ToList();
 
-            Devices.Clear();
+            var existingMap = Devices.ToDictionary(d => d.Key, d => d);
+            var newKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (var status in sortedStatuses)
+            for (int i = 0; i < sortedStatuses.Count; i++)
             {
-                Devices.Add(new DeviceItemViewModel(status));
+                var status = sortedStatuses[i];
+                var key = !string.IsNullOrWhiteSpace(status.Device.Address) ? status.Device.Address : status.Device.Id;
+                newKeys.Add(key);
+
+                if (existingMap.TryGetValue(key, out var existingVm))
+                {
+                    existingVm.Update(status);
+                    int currentIndex = Devices.IndexOf(existingVm);
+                    if (currentIndex != i && currentIndex >= 0)
+                    {
+                        Devices.Move(currentIndex, i);
+                    }
+                }
+                else
+                {
+                    var newVm = new DeviceItemViewModel(status);
+                    if (i < Devices.Count)
+                        Devices.Insert(i, newVm);
+                    else
+                        Devices.Add(newVm);
+                }
+            }
+
+            for (int i = Devices.Count - 1; i >= 0; i--)
+            {
+                if (!newKeys.Contains(Devices[i].Key))
+                {
+                    Devices.RemoveAt(i);
+                }
             }
 
             LastUpdatedText = $"Updated at: {DateTime.Now:HH:mm:ss}";
+
+            MemoryCleaner.TrimWorkingSet();
         }
 
         private void ExitApp()

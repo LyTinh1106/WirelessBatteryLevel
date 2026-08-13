@@ -284,7 +284,7 @@ namespace WirelessBatteryLevel.Infrastructure.Battery
 
         private static List<string> GetAddressFormats(string rawAddress)
         {
-            var formats = new List<string> { rawAddress };
+            var formats = new List<string>(4) { rawAddress };
 
             // Nếu là chuỗi số thập phân ulong (ví dụ: 277459096578711)
             if (ulong.TryParse(rawAddress, out var addressNum))
@@ -295,15 +295,20 @@ namespace WirelessBatteryLevel.Infrastructure.Battery
                 // Tạo định dạng MAC chuẩn FC:58:FA:01:23:45
                 if (hex.Length == 12)
                 {
-                    var macWithColons = string.Join(":",
-                        Enumerable.Range(0, 6).Select(i => hex.Substring(i * 2, 2)));
+                    var macWithColons = $"{hex[0]}{hex[1]}:{hex[2]}{hex[3]}:{hex[4]}{hex[5]}:{hex[6]}{hex[7]}:{hex[8]}{hex[9]}:{hex[10]}{hex[11]}";
                     formats.Add(macWithColons);
                 }
             }
             else
             {
                 // Nếu chuỗi là Hex có hoặc không có dấu :
-                var cleanHex = new string(rawAddress.Where(char.IsLetterOrDigit).ToArray());
+                var sb = new StringBuilder(rawAddress.Length);
+                foreach (var c in rawAddress)
+                {
+                    if (char.IsLetterOrDigit(c))
+                        sb.Append(c);
+                }
+                var cleanHex = sb.ToString();
                 if (!string.IsNullOrEmpty(cleanHex))
                 {
                     formats.Add(cleanHex);
@@ -314,7 +319,7 @@ namespace WirelessBatteryLevel.Infrastructure.Battery
                 }
             }
 
-            return formats.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+            return formats;
         }
     }
 }

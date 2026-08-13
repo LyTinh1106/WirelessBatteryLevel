@@ -3,11 +3,17 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace WirelessBatteryLevel.App
 {
     public static class IconGenerator
     {
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        private static extern bool DestroyIcon(IntPtr handle);
+
+        private static Icon? _cachedIcon;
+
         public static string EnsureIconCreated()
         {
             var iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "app_icon.ico");
@@ -28,10 +34,14 @@ namespace WirelessBatteryLevel.App
 
         public static Icon CreateZtkIconInstance()
         {
+            if (_cachedIcon != null)
+                return _cachedIcon;
+
             try
             {
                 using var ms = GenerateBatteryIcon();
-                return new Icon(ms);
+                _cachedIcon = new Icon(ms);
+                return _cachedIcon;
             }
             catch
             {
@@ -92,9 +102,16 @@ namespace WirelessBatteryLevel.App
 
             var ms = new MemoryStream();
             var hIcon = bmp.GetHicon();
-            using (var icon = Icon.FromHandle(hIcon))
+            try
             {
-                icon.Save(ms);
+                using (var icon = Icon.FromHandle(hIcon))
+                {
+                    icon.Save(ms);
+                }
+            }
+            finally
+            {
+                DestroyIcon(hIcon);
             }
             ms.Position = 0;
             return ms;

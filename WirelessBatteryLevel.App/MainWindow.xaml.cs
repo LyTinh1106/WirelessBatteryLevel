@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using System.Windows.Forms;
+using WirelessBatteryLevel.App.Helpers;
 using WirelessBatteryLevel.App.ViewModels;
 
 namespace WirelessBatteryLevel.App
@@ -28,14 +29,14 @@ namespace WirelessBatteryLevel.App
         private void MainWindow_Deactivated(object? sender, EventArgs e)
         {
             // Auto hide window when user clicks outside
-            Hide();
+            HideWindow();
         }
 
         public void ToggleVisibility()
         {
             if (IsVisible)
             {
-                Hide();
+                HideWindow();
             }
             else
             {
@@ -43,6 +44,12 @@ namespace WirelessBatteryLevel.App
                 Show();
                 Activate();
             }
+        }
+
+        private void HideWindow()
+        {
+            Hide();
+            MemoryCleaner.TrimWorkingSet();
         }
 
         private void PositionNearTray()
