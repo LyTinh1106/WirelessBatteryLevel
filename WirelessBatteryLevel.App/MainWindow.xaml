@@ -116,7 +116,7 @@
                             BorderThickness="0"
                             Cursor="Hand"
                             Margin="0,0,4,0"
-                            ToolTip="Làm mới thiết bị">
+                            ToolTip="Refresh">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
                                 <Border x:Name="btnBorder" Background="Transparent" CornerRadius="4" Padding="5,4">
@@ -139,7 +139,7 @@
                             Background="Transparent"
                             BorderThickness="0"
                             Cursor="Hand"
-                            ToolTip="Đóng cửa sổ">
+                            ToolTip="Close window">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
                                 <Border x:Name="closeBorder" Background="Transparent" CornerRadius="4" Padding="5,4">

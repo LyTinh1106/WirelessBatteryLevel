@@ -23,7 +23,7 @@ namespace WirelessBatteryLevel.App
 
             _autoCloseTimer = new DispatcherTimer
             {
-                Interval = TimeSpan.FromSeconds(90)
+                Interval = TimeSpan.FromSeconds(60)
             };
             _autoCloseTimer.Tick += (s, e) =>
             {
