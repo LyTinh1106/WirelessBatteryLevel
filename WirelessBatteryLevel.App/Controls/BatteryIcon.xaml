@@ -5,20 +5,24 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:WirelessBatteryLevel.App.Controls"
              mc:Ignorable="d" 
+             SnapsToDevicePixels="True"
+             UseLayoutRounding="True"
+             RenderOptions.BitmapScalingMode="HighQuality"
              d:DesignHeight="24" d:DesignWidth="40">
 
     <UserControl.Resources>
         <local:BatteryWidthConverter x:Key="WidthConverter"/>
     </UserControl.Resources>
 
-    <Grid ToolTip="{Binding BatteryTooltip}" Background="Transparent">
+    <Grid ToolTip="{Binding BatteryTooltip}" Background="Transparent" SnapsToDevicePixels="True">
         <!-- SVG Vector Battery Icon Container -->
-        <Canvas Width="32" Height="18" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Canvas Width="32" Height="18" HorizontalAlignment="Center" VerticalAlignment="Center" SnapsToDevicePixels="True">
             <!-- Outlined Battery Shell (Body + Nipple) -->
             <Path Data="M 2 3 C 0.895 3 0 3.895 0 5 L 0 13 C 0 14.105 0.895 15 2 15 L 24 15 C 25.105 15 26 14.105 26 13 L 26 11 C 27.105 11 28 10.105 28 9 L 28 9 C 28 7.895 27.105 7 26 7 L 26 5 C 26 3.895 25.105 3 24 3 Z M 2 5 L 24 5 C 24 5 24 13 24 13 L 2 13 Z"
-                  Fill="#374151" 
+                  Fill="#3F3F46" 
                   Stroke="#9CA3AF" 
-                  StrokeThickness="0.8"/>
+                  StrokeThickness="0.5"
+                  SnapsToDevicePixels="True"/>
 
             <!-- Inner Battery Fill Bar -->
             <Border Canvas.Left="3" Canvas.Top="5" Height="8" CornerRadius="1" ClipToBounds="True">

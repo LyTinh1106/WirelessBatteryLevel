@@ -3,6 +3,7 @@ using System;
 using System.Drawing;
 using System.Windows;
 using System.Windows.Forms;
+using WirelessBatteryLevel.App.Controls;
 using WirelessBatteryLevel.App.Helpers;
 using WirelessBatteryLevel.App.ViewModels;
 using WirelessBatteryLevel.Core.Interfaces;
@@ -15,6 +16,7 @@ namespace WirelessBatteryLevel.App
     public partial class App : System.Windows.Application
     {
         private NotifyIcon? _notifyIcon;
+        private TrayHoverPopup? _hoverPopup;
         public IServiceProvider Services { get; }
 
         public App()
@@ -45,6 +47,7 @@ namespace WirelessBatteryLevel.App
             // ViewModels & UI
             services.AddSingleton<TrayViewModel>();
             services.AddSingleton<MainWindow>();
+            services.AddSingleton<TrayHoverPopup>();
         }
 
         protected override void OnStartup(StartupEventArgs e)
@@ -54,6 +57,7 @@ namespace WirelessBatteryLevel.App
             ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
             var mainWindow = Services.GetRequiredService<MainWindow>();
+            _hoverPopup = Services.GetRequiredService<TrayHoverPopup>();
 
             InitializeTrayIcon(mainWindow);
 
@@ -69,20 +73,46 @@ namespace WirelessBatteryLevel.App
                 Visible = true
             };
 
-            // Toggle Flyout Window on click or mouse hover
+            // Toggle Flyout Window on click
             _notifyIcon.Click += (sender, args) =>
             {
                 if (args is MouseEventArgs mouseArgs && mouseArgs.Button == MouseButtons.Left)
                 {
+                    if (_hoverPopup != null && _hoverPopup.IsVisible)
+                    {
+                        _hoverPopup.Hide();
+                    }
                     mainWindow.ToggleVisibility();
                 }
             };
 
-            // Create Context Menu for Tray Icon
-            var contextMenu = new ContextMenuStrip();
+            // Quick Hover Tooltip on Mouse Move over tray icon
+            _notifyIcon.MouseMove += (sender, args) =>
+            {
+                if (mainWindow.IsVisible) return;
+
+                if (_hoverPopup != null && !_hoverPopup.IsVisible)
+                {
+                    _hoverPopup.PositionNearTray();
+                    _hoverPopup.Show();
+                }
+            };
+
+            // Create Dark Gray Context Menu for Tray Icon
+            var contextMenu = new ContextMenuStrip
+            {
+                Renderer = new ToolStripProfessionalRenderer(new DarkGrayColorTable()),
+                ForeColor = System.Drawing.Color.FromArgb(225, 225, 225),
+                BackColor = System.Drawing.Color.FromArgb(37, 37, 38),
+                ShowImageMargin = false
+            };
             
             contextMenu.Items.Add("Show device list", null, (sender, e) =>
             {
+                if (_hoverPopup != null && _hoverPopup.IsVisible)
+                {
+                    _hoverPopup.Hide();
+                }
                 mainWindow.ToggleVisibility();
             });
 
@@ -90,12 +120,28 @@ namespace WirelessBatteryLevel.App
 
             contextMenu.Items.Add("Exit", null, (sender, e) =>
             {
+                _hoverPopup?.Close();
                 _notifyIcon.Visible = false;
                 _notifyIcon.Dispose();
                 System.Windows.Application.Current.Shutdown();
             });
 
             _notifyIcon.ContextMenuStrip = contextMenu;
+        }
+
+        private class DarkGrayColorTable : ProfessionalColorTable
+        {
+            public override System.Drawing.Color ToolStripDropDownBackground => System.Drawing.Color.FromArgb(37, 37, 38);
+            public override System.Drawing.Color ImageMarginGradientBegin => System.Drawing.Color.FromArgb(37, 37, 38);
+            public override System.Drawing.Color ImageMarginGradientMiddle => System.Drawing.Color.FromArgb(37, 37, 38);
+            public override System.Drawing.Color ImageMarginGradientEnd => System.Drawing.Color.FromArgb(37, 37, 38);
+            public override System.Drawing.Color MenuItemSelected => System.Drawing.Color.FromArgb(55, 55, 61);
+            public override System.Drawing.Color MenuItemSelectedGradientBegin => System.Drawing.Color.FromArgb(55, 55, 61);
+            public override System.Drawing.Color MenuItemSelectedGradientEnd => System.Drawing.Color.FromArgb(55, 55, 61);
+            public override System.Drawing.Color MenuItemBorder => System.Drawing.Color.FromArgb(63, 63, 70);
+            public override System.Drawing.Color MenuBorder => System.Drawing.Color.FromArgb(63, 63, 70);
+            public override System.Drawing.Color SeparatorDark => System.Drawing.Color.FromArgb(63, 63, 70);
+            public override System.Drawing.Color SeparatorLight => System.Drawing.Color.FromArgb(45, 45, 48);
         }
 
         protected override void OnExit(ExitEventArgs e)

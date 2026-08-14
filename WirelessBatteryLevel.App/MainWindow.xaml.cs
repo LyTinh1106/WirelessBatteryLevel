@@ -14,6 +14,8 @@ namespace WirelessBatteryLevel.App
         {
             InitializeComponent();
 
+            Icon = IconGenerator.GetWpfIconSource();
+
             _viewModel = viewModel;
             DataContext = _viewModel;
 
