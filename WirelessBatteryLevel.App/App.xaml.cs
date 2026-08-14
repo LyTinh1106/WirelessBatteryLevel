@@ -3,7 +3,6 @@ using System;
 using System.Drawing;
 using System.Windows;
 using System.Windows.Forms;
-using WirelessBatteryLevel.App.Controls;
 using WirelessBatteryLevel.App.Helpers;
 using WirelessBatteryLevel.App.ViewModels;
 using WirelessBatteryLevel.Core.Interfaces;
@@ -16,7 +15,6 @@ namespace WirelessBatteryLevel.App
     public partial class App : System.Windows.Application
     {
         private NotifyIcon? _notifyIcon;
-        private TrayHoverPopup? _hoverPopup;
         public IServiceProvider Services { get; }
 
         public App()
@@ -47,7 +45,6 @@ namespace WirelessBatteryLevel.App
             // ViewModels & UI
             services.AddSingleton<TrayViewModel>();
             services.AddSingleton<MainWindow>();
-            services.AddSingleton<TrayHoverPopup>();
         }
 
         protected override void OnStartup(StartupEventArgs e)
@@ -56,8 +53,10 @@ namespace WirelessBatteryLevel.App
 
             ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
+            var trayViewModel = Services.GetRequiredService<TrayViewModel>();
+            _ = trayViewModel.StartMonitoringAsync();
+
             var mainWindow = Services.GetRequiredService<MainWindow>();
-            _hoverPopup = Services.GetRequiredService<TrayHoverPopup>();
 
             InitializeTrayIcon(mainWindow);
 
@@ -78,23 +77,7 @@ namespace WirelessBatteryLevel.App
             {
                 if (args is MouseEventArgs mouseArgs && mouseArgs.Button == MouseButtons.Left)
                 {
-                    if (_hoverPopup != null && _hoverPopup.IsVisible)
-                    {
-                        _hoverPopup.Hide();
-                    }
                     mainWindow.ToggleVisibility();
-                }
-            };
-
-            // Quick Hover Tooltip on Mouse Move over tray icon
-            _notifyIcon.MouseMove += (sender, args) =>
-            {
-                if (mainWindow.IsVisible) return;
-
-                if (_hoverPopup != null && !_hoverPopup.IsVisible)
-                {
-                    _hoverPopup.PositionNearTray();
-                    _hoverPopup.Show();
                 }
             };
 
@@ -109,10 +92,6 @@ namespace WirelessBatteryLevel.App
             
             contextMenu.Items.Add("Show device list", null, (sender, e) =>
             {
-                if (_hoverPopup != null && _hoverPopup.IsVisible)
-                {
-                    _hoverPopup.Hide();
-                }
                 mainWindow.ToggleVisibility();
             });
 
@@ -120,7 +99,6 @@ namespace WirelessBatteryLevel.App
 
             contextMenu.Items.Add("Exit", null, (sender, e) =>
             {
-                _hoverPopup?.Close();
                 _notifyIcon.Visible = false;
                 _notifyIcon.Dispose();
                 System.Windows.Application.Current.Shutdown();

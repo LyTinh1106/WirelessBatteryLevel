@@ -9,6 +9,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ServerGarbageCollection>false</ServerGarbageCollection>
     <ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
+    <ApplicationIcon>app_icon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>

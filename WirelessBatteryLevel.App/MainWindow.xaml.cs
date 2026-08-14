@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
-using System.Windows.Forms;
+using System.Windows.Input;
+using System.Windows.Threading;
 using WirelessBatteryLevel.App.Helpers;
 using WirelessBatteryLevel.App.ViewModels;
 
@@ -9,6 +10,7 @@ namespace WirelessBatteryLevel.App
     public partial class MainWindow : Window
     {
         private readonly TrayViewModel _viewModel;
+        private readonly DispatcherTimer _autoCloseTimer;
 
         public MainWindow(TrayViewModel viewModel)
         {
@@ -19,8 +21,20 @@ namespace WirelessBatteryLevel.App
             _viewModel = viewModel;
             DataContext = _viewModel;
 
+            _autoCloseTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(90)
+            };
+            _autoCloseTimer.Tick += (s, e) =>
+            {
+                _autoCloseTimer.Stop();
+                HideWindow();
+            };
+
+            MouseEnter += (s, e) => ResetAutoCloseTimer();
+            MouseMove += (s, e) => ResetAutoCloseTimer();
+
             Loaded += MainWindow_Loaded;
-            Deactivated += MainWindow_Deactivated;
         }
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -28,9 +42,17 @@ namespace WirelessBatteryLevel.App
             await _viewModel.StartMonitoringAsync();
         }
 
-        private void MainWindow_Deactivated(object? sender, EventArgs e)
+        private void Header_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            // Auto hide window when user clicks outside
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                ResetAutoCloseTimer();
+                DragMove();
+            }
+        }
+
+        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        {
             HideWindow();
         }
 
@@ -45,11 +67,22 @@ namespace WirelessBatteryLevel.App
                 PositionNearTray();
                 Show();
                 Activate();
+                ResetAutoCloseTimer();
+            }
+        }
+
+        public void ResetAutoCloseTimer()
+        {
+            if (IsVisible)
+            {
+                _autoCloseTimer.Stop();
+                _autoCloseTimer.Start();
             }
         }
 
         private void HideWindow()
         {
+            _autoCloseTimer.Stop();
             Hide();
             MemoryCleaner.TrimWorkingSet();
         }
@@ -64,6 +97,7 @@ namespace WirelessBatteryLevel.App
 
         protected override void OnClosed(EventArgs e)
         {
+            _autoCloseTimer.Stop();
             _viewModel.StopMonitoring();
             base.OnClosed(e);
         }

@@ -85,41 +85,55 @@ namespace WirelessBatteryLevel.App
 
                 // Top Battery Nipple / Cap
                 int capWidth = 72;
-                int capHeight = 28;
+                int capHeight = 20;
                 int capX = (size - capWidth) / 2;
-                int capY = 12;
-                using (var capBrush = new SolidBrush(System.Drawing.Color.FromArgb(255, 30, 30, 30)))
+                int capY = 4;
+                using (var capBrush = new SolidBrush(System.Drawing.Color.FromArgb(255, 20, 20, 20)))
                 {
                     g.FillRectangle(capBrush, capX, capY, capWidth, capHeight);
                 }
 
-                // Battery Body Dimensions
-                int bodyX = 40;
-                int bodyY = 36;
-                int bodyWidth = 176;
-                int bodyHeight = 204;
-                int cornerRadius = 24;
+                // Battery Body Dimensions (Slimmer & Taller proportions)
+                int bodyX = 44;
+                int bodyY = 22;
+                int bodyWidth = 168;
+                int bodyHeight = 228;
+                int cornerRadius = 22;
 
-                // Gray Fill Background
-                using (var bgBrush = new SolidBrush(System.Drawing.Color.FromArgb(255, 170, 175, 185)))
-                {
-                    FillRoundedRectangle(g, bgBrush, bodyX, bodyY, bodyWidth, bodyHeight, cornerRadius);
-                }
-
-                // Inner Battery Charge Level Indicator Bar (Green Accent)
-                int innerMargin = 24;
+                // Inner Fill Area
+                int innerMargin = 12;
                 int innerX = bodyX + innerMargin;
-                int innerY = bodyY + 72;
+                int innerY = bodyY + innerMargin;
                 int innerWidth = bodyWidth - (innerMargin * 2);
-                int innerHeight = bodyHeight - 96;
-                using (var fillBrush = new SolidBrush(System.Drawing.Color.FromArgb(255, 34, 197, 94))) // Green battery fill
+                int innerHeight = bodyHeight - (innerMargin * 2);
+                int innerRadius = 14;
+
+                // Create rounded clip path for inner battery fill
+                using (var innerPath = GetRoundedPath(innerX, innerY, innerWidth, innerHeight, innerRadius))
                 {
-                    FillRoundedRectangle(g, fillBrush, innerX, innerY, innerWidth, innerHeight, 12);
+                    var oldClip = g.Clip;
+                    g.SetClip(innerPath);
+
+                    // Top 35% Gray Unfilled Area
+                    int top35Height = (int)(innerHeight * 0.35);
+                    using (var grayBrush = new SolidBrush(System.Drawing.Color.FromArgb(255, 71, 85, 105)))
+                    {
+                        g.FillRectangle(grayBrush, innerX, innerY, innerWidth, top35Height);
+                    }
+
+                    // Bottom 65% Green Filled Area
+                    int bottom65Height = innerHeight - top35Height;
+                    using (var greenBrush = new SolidBrush(System.Drawing.Color.FromArgb(255, 34, 197, 94)))
+                    {
+                        g.FillRectangle(greenBrush, innerX, innerY + top35Height, innerWidth, bottom65Height);
+                    }
+
+                    g.Clip = oldClip;
                 }
 
-                // Draw "ZTK" Text on Battery Cap/Body area
-                using (var font = new Font("Segoe UI", 32, System.Drawing.FontStyle.Bold, GraphicsUnit.Pixel))
-                using (var textBrush = new SolidBrush(System.Drawing.Color.FromArgb(255, 20, 20, 20)))
+                // Draw "ZTK" Text in the exact Middle of Battery Body
+                using (var font = new Font("Arial Black", 58, System.Drawing.FontStyle.Regular, GraphicsUnit.Pixel))
+                using (var textBrush = new SolidBrush(System.Drawing.Color.FromArgb(255, 15, 23, 42))) // High contrast dark text
                 {
                     var sf = new StringFormat
                     {
@@ -127,12 +141,11 @@ namespace WirelessBatteryLevel.App
                         LineAlignment = StringAlignment.Center
                     };
 
-                    // Draw ZTK in upper portion of battery body
-                    var textRect = new RectangleF(bodyX, bodyY + 12, bodyWidth, 54);
+                    var textRect = new RectangleF(bodyX - 4, bodyY + (bodyHeight - 86) / 2.0f, bodyWidth + 8, 86);
                     g.DrawString("ZTK", font, textBrush, textRect, sf);
                 }
 
-                // Black Outer Border
+                // Outer Black Border
                 using (var borderPen = new System.Drawing.Pen(System.Drawing.Color.Black, 16))
                 {
                     borderPen.LineJoin = LineJoin.Round;

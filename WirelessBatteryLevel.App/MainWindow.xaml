@@ -64,6 +64,10 @@
         </Border.Effect>
 
         <Grid Margin="12" SnapsToDevicePixels="True">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="0*"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <!-- Header -->
                 <RowDefinition Height="Auto"/>
@@ -76,7 +80,7 @@
             </Grid.RowDefinitions>
 
             <!-- Header Panel -->
-            <Grid Grid.Row="0" Margin="2,0,2,8">
+            <Grid Grid.Row="0" Margin="2,0,2,8" Grid.ColumnSpan="2" Background="Transparent" MouseLeftButtonDown="Header_MouseLeftButtonDown">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <!-- Bluetooth App Icon -->
                     <Path Data="M 10 2 L 10 24 L 17 17 L 12 12.5 L 17 8 L 10 2 M 10 12.5 L 4 6.5 M 10 12.5 L 4 18.5"
@@ -104,36 +108,61 @@
                                Margin="6,0,0,2"/>
                 </StackPanel>
 
-                <!-- Refresh Button -->
-                <Button Command="{Binding RefreshCommand}"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Center"
-                        Background="Transparent"
-                        BorderThickness="0"
-                        Cursor="Hand"
-                        ToolTip="Làm mới thiết bị">
-                    <Button.Template>
-                        <ControlTemplate TargetType="Button">
-                            <Border x:Name="btnBorder" Background="Transparent" CornerRadius="4" Padding="5,4">
-                                <Path x:Name="btnPath" Data="M 12 4 C 7.58 4 4 7.58 4 12 C 4 16.42 7.58 20 12 20 C 15.73 20 18.84 17.45 19.73 14 L 17.65 14 C 16.83 16.33 14.61 18 12 18 C 6 8.69 8.69 6 12 6 C 13.66 6 15.14 6.69 16.22 7.78 L 13 11 L 20 11 L 20 4 L 17.63 6.37 C 16.19 4.9 14.2 4 12 4 Z"
-                                      Fill="#9CA3AF" Width="13" Height="13" Stretch="Uniform" SnapsToDevicePixels="True"/>
-                            </Border>
-                            <ControlTemplate.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="btnBorder" Property="Background" Value="#37373D"/>
-                                    <Setter TargetName="btnPath" Property="Fill" Value="#60A5FA"/>
-                                </Trigger>
-                            </ControlTemplate.Triggers>
-                        </ControlTemplate>
-                    </Button.Template>
-                </Button>
+                <!-- Action Buttons (Refresh & Close) -->
+                <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- Refresh Button -->
+                    <Button Command="{Binding RefreshCommand}"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            Margin="0,0,4,0"
+                            ToolTip="Làm mới thiết bị">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="btnBorder" Background="Transparent" CornerRadius="4" Padding="5,4">
+                                    <Path x:Name="btnPath" Data="M 12 4 C 7.58 4 4 7.58 4 12 C 4 16.42 7.58 20 12 20 C 15.45 20 18.42 17.82 19.55 14 L 17.45 14 C 16.48 16.35 14.43 18 12 18 C 8.69 18 6 15.31 6 12 C 6 8.69 8.69 6 12 6 C 13.66 6 15.14 6.69 16.22 7.78 L 13 11 L 20 11 L 20 4 L 17.63 6.37 C 16.19 4.9 14.2 4 12 4 Z"
+                                          Fill="#9CA3AF" Width="13" Height="13" Stretch="Uniform" SnapsToDevicePixels="True"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="btnBorder" Property="Background" Value="#37373D"/>
+                                        <Setter TargetName="btnPath" Property="Fill" Value="#60A5FA"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+
+                    <!-- Close (X) Button -->
+                    <Button x:Name="CloseButton"
+                            Click="CloseButton_Click"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            ToolTip="Đóng cửa sổ">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="closeBorder" Background="Transparent" CornerRadius="4" Padding="5,4">
+                                    <Path x:Name="closePath" Data="M 18 6 L 6 18 M 6 6 L 18 18"
+                                          Stroke="#9CA3AF" StrokeThickness="1.5" Width="12" Height="12" Stretch="Uniform" SnapsToDevicePixels="True"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="closeBorder" Property="Background" Value="#37373D"/>
+                                        <Setter TargetName="closePath" Property="Stroke" Value="#EF4444"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </StackPanel>
             </Grid>
 
             <!-- Divider -->
-            <Rectangle Grid.Row="1" Height="1" Fill="#3F3F46" Margin="0,0,0,8" SnapsToDevicePixels="True"/>
+            <Rectangle Grid.Row="1" Height="1" Fill="#3F3F46" Margin="0,0,0,8" SnapsToDevicePixels="True" Grid.ColumnSpan="2"/>
 
             <!-- Device List / Empty State Container -->
-            <Grid Grid.Row="2">
+            <Grid Grid.Row="2" Grid.ColumnSpan="2">
                 <!-- Empty State Message -->
                 <TextBlock Text="No device found"
                            Foreground="#8E8E93"
@@ -220,7 +249,7 @@
             </Grid>
 
             <!-- Footer Panel -->
-            <Grid Grid.Row="3" Margin="0,8,0,0">
+            <Grid Grid.Row="3" Margin="0,8,0,0" Grid.ColumnSpan="2">
                 <TextBlock Text="{Binding LastUpdatedText}" 
                            Foreground="#8E8E93" 
                            FontSize="9.5" 
