@@ -56,6 +56,11 @@ namespace WirelessBatteryLevel.App
             HideWindow();
         }
 
+        private void SettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            ResetAutoCloseTimer();
+        }
+
         public void ToggleVisibility()
         {
             if (IsVisible)
@@ -89,10 +94,10 @@ namespace WirelessBatteryLevel.App
 
         private void PositionNearTray()
         {
-            // Position near the bottom-right corner (System Tray area)
+            // Position flush to bottom-right corner and top edge of Taskbar (gap = 0)
             var workingArea = SystemParameters.WorkArea;
-            Left = workingArea.Right - Width - 8;
-            Top = workingArea.Bottom - Height - 8;
+            Left = workingArea.Right - Width;
+            Top = workingArea.Bottom - Height;
         }
 
         protected override void OnClosed(EventArgs e)

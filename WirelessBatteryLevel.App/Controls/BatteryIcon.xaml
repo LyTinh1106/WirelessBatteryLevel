@@ -7,34 +7,40 @@
              mc:Ignorable="d" 
              SnapsToDevicePixels="True"
              UseLayoutRounding="True"
-             RenderOptions.BitmapScalingMode="HighQuality"
-             d:DesignHeight="24" d:DesignWidth="40">
+             Height="18" Width="38"
+             d:DesignHeight="18" d:DesignWidth="38">
 
     <UserControl.Resources>
         <local:BatteryWidthConverter x:Key="WidthConverter"/>
     </UserControl.Resources>
 
     <Grid ToolTip="{Binding BatteryTooltip}" Background="Transparent" SnapsToDevicePixels="True">
-        <!-- SVG Vector Battery Icon Container -->
-        <Canvas Width="32" Height="18" HorizontalAlignment="Center" VerticalAlignment="Center" SnapsToDevicePixels="True">
-            <!-- Outlined Battery Shell (Body + Nipple) -->
-            <Path Data="M 2 3 C 0.895 3 0 3.895 0 5 L 0 13 C 0 14.105 0.895 15 2 15 L 24 15 C 25.105 15 26 14.105 26 13 L 26 11 C 27.105 11 28 10.105 28 9 L 28 9 C 28 7.895 27.105 7 26 7 L 26 5 C 26 3.895 25.105 3 24 3 Z M 2 5 L 24 5 C 24 5 24 13 24 13 L 2 13 Z"
-                  Fill="#3F3F46" 
-                  Stroke="#9CA3AF" 
-                  StrokeThickness="0.5"
-                  SnapsToDevicePixels="True"/>
+        <!-- SVG Vector Windows 10 Native Battery Icon Container -->
+        <Canvas Width="36" Height="18" HorizontalAlignment="Center" VerticalAlignment="Center" SnapsToDevicePixels="True">
+            <!-- Outer Battery Outline -->
+            <Rectangle Canvas.Left="0.5" Canvas.Top="0.5" Width="32" Height="17"
+                       Stroke="#D1D5DB"
+                       StrokeThickness="1"
+                       Fill="Transparent"
+                       SnapsToDevicePixels="True"/>
 
-            <!-- Inner Battery Fill Bar -->
-            <Border Canvas.Left="3" Canvas.Top="5" Height="8" CornerRadius="1" ClipToBounds="True">
-                <Grid Width="19">
+            <!-- Solid Battery Stud / Nipple Terminal on Right -->
+            <Rectangle Canvas.Left="32" Canvas.Top="5" Width="3" Height="8"
+                       Fill="#D1D5DB"
+                       SnapsToDevicePixels="True"/>
+
+            <!-- Inner Dynamic Fill Bar (Adjusted to 27px for Perfectly Balanced Right Gap at 100%) -->
+            <Border Canvas.Left="3" Canvas.Top="3" Height="12" CornerRadius="0" ClipToBounds="True" SnapsToDevicePixels="True">
+                <Grid Width="27">
                     <Rectangle HorizontalAlignment="Left"
                                Fill="{Binding BatteryFillBrush}"
-                               Height="8">
+                               Height="12"
+                               SnapsToDevicePixels="True">
                         <Rectangle.Style>
                             <Style TargetType="Rectangle">
                                 <Setter Property="Width">
                                     <Setter.Value>
-                                        <MultiBinding Converter="{StaticResource WidthConverter}" ConverterParameter="19">
+                                        <MultiBinding Converter="{StaticResource WidthConverter}" ConverterParameter="27">
                                             <Binding Path="BatteryLevelWidthRatio" />
                                         </MultiBinding>
                                     </Setter.Value>

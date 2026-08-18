@@ -47,6 +47,12 @@ namespace WirelessBatteryLevel.App.ViewModels
 
         public bool IsConnected => _status.Device.IsConnected;
 
+        public Brush IndicatorBrush => IsConnected ? GreenBatteryBrush : GrayBrush;
+
+        public string FullTooltipText => $"{Name} - {(SourceText == "BLE" ? "Bluetooth LE" : "Classic Bluetooth")}";
+
+        public string BatteryPercentageText => HasBattery && BatteryLevel.HasValue ? $"{BatteryLevel.Value}%" : "0%";
+
         public Brush StatusBrush => IsConnected ? GreenStatusBrush : GrayBrush;
 
         public string StatusTooltip => IsConnected ? "Connected" : "Disconnected";
@@ -55,7 +61,7 @@ namespace WirelessBatteryLevel.App.ViewModels
 
         public int? BatteryLevel => HasBattery ? _status.Battery?.Level : null;
 
-        public string BatteryTooltip => HasBattery ? $"{BatteryLevel}%" : "N/A";
+        public string BatteryTooltip => HasBattery ? $"{BatteryLevel}%" : "0%";
 
         public Brush BatteryFillBrush
         {

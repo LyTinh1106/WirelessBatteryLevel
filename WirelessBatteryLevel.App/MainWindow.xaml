@@ -6,7 +6,7 @@
         xmlns:controls="clr-namespace:WirelessBatteryLevel.App.Controls"
         mc:Ignorable="d"
         Title="Wireless Battery Level" 
-        Height="360" Width="320"
+        Height="380" Width="340"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
@@ -22,7 +22,7 @@
     <Window.Resources>
         <!-- Custom ScrollBar Style -->
         <Style TargetType="ScrollBar">
-            <Setter Property="Width" Value="6"/>
+            <Setter Property="Width" Value="5"/>
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -45,7 +45,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Thumb">
-                        <Rectangle x:Name="rectangle" RadiusX="3" RadiusY="3" Fill="#52525B" Height="{TemplateBinding Height}" Width="{TemplateBinding Width}"/>
+                        <Rectangle x:Name="rectangle" RadiusX="0" RadiusY="0" Fill="#52525B" Height="{TemplateBinding Height}" Width="{TemplateBinding Width}"/>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="true">
                                 <Setter TargetName="rectangle" Property="Fill" Value="#71717A"/>
@@ -57,17 +57,9 @@
         </Style>
     </Window.Resources>
 
-    <!-- Main Container Card with Outer DropShadow & Flat Square Border (CornerRadius="0") -->
-    <Border Margin="10" CornerRadius="0" Background="#252526" BorderBrush="#3F3F46" BorderThickness="1" SnapsToDevicePixels="True">
-        <Border.Effect>
-            <DropShadowEffect BlurRadius="12" Color="#000000" Direction="270" Opacity="0.45" ShadowDepth="3"/>
-        </Border.Effect>
-
+    <!-- Main Container Card (Flush to screen edges, Margin 0) -->
+    <Border Margin="0" CornerRadius="0" Background="#1F1F1F" BorderBrush="#3A3A3C" BorderThickness="1" SnapsToDevicePixels="True">
         <Grid Margin="12" SnapsToDevicePixels="True">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="0*"/>
-                <ColumnDefinition/>
-            </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <!-- Header -->
                 <RowDefinition Height="Auto"/>
@@ -80,76 +72,109 @@
             </Grid.RowDefinitions>
 
             <!-- Header Panel -->
-            <Grid Grid.Row="0" Margin="2,0,2,8" Grid.ColumnSpan="2" Background="Transparent" MouseLeftButtonDown="Header_MouseLeftButtonDown">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <!-- Bluetooth App Icon -->
-                    <Path Data="M 10 2 L 10 24 L 17 17 L 12 12.5 L 17 8 L 10 2 M 10 12.5 L 4 6.5 M 10 12.5 L 4 18.5"
-                          Fill="Transparent" 
-                          Stroke="#60A5FA" 
-                          StrokeThickness="1.2" 
-                          Width="13" Height="17" 
-                          Stretch="Uniform" 
-                          Margin="0,0,8,0"
-                          SnapsToDevicePixels="True"/>
+            <Grid Grid.Row="0" Margin="2,0,2,6" Background="Transparent" MouseLeftButtonDown="Header_MouseLeftButtonDown">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-                    <!-- Title -->
+                <!-- Bluetooth App Logo (Win10 White Icon, Hover System Accent) -->
+                <Path Grid.Column="0"
+                      Data="M 10 2 L 10 24 L 17 17 L 12 12.5 L 17 8 L 10 2 M 10 12.5 L 4 6.5 M 10 12.5 L 4 18.5"
+                      Fill="Transparent" 
+                      StrokeThickness="1.5" 
+                      Width="13" Height="17" 
+                      Stretch="Uniform" 
+                      Margin="0,0,8,0"
+                      VerticalAlignment="Center"
+                      ToolTip="Bluetooth"
+                      Style="{StaticResource BluetoothLogoHoverStyle}"
+                      SnapsToDevicePixels="True"/>
+
+                <!-- Title & Author -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="Wireless Battery" 
                                Foreground="#F1F1F1" 
-                               FontWeight="Bold" 
+                               FontWeight="SemiBold" 
                                FontSize="13.5" 
                                VerticalAlignment="Center"/>
 
-                    <!-- Subtitle Made by Ztk -->
+                    <!-- Author Subtitle (Hover System Accent) -->
                     <TextBlock Text="Made by Ztk" 
-                               Foreground="#8E8E93" 
+                               Style="{StaticResource SubtitleHoverStyle}"
                                FontSize="9.5" 
-                               FontWeight="Normal" 
                                VerticalAlignment="Bottom" 
-                               Margin="6,0,0,2"/>
+                               Margin="6,0,0,2"
+                               ToolTip="Author"/>
                 </StackPanel>
 
-                <!-- Action Buttons (Refresh & Close) -->
-                <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" VerticalAlignment="Center">
-                    <!-- Refresh Button -->
+                <!-- Action Buttons (Refresh, Settings & Close - CornerRadius="0" No rounded corners) -->
+                <StackPanel Grid.Column="2" HorizontalAlignment="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- Refresh Button (Hover System Accent, CornerRadius=0) -->
                     <Button Command="{Binding RefreshCommand}"
                             Background="Transparent"
                             BorderThickness="0"
                             Cursor="Hand"
-                            Margin="0,0,4,0"
+                            Margin="0"
                             ToolTip="Refresh">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
-                                <Border x:Name="btnBorder" Background="Transparent" CornerRadius="4" Padding="5,4">
+                                <Border x:Name="btnBorder" Background="Transparent" CornerRadius="0" Padding="8,6">
                                     <Path x:Name="btnPath" Data="M 12 4 C 7.58 4 4 7.58 4 12 C 4 16.42 7.58 20 12 20 C 15.45 20 18.42 17.82 19.55 14 L 17.45 14 C 16.48 16.35 14.43 18 12 18 C 8.69 18 6 15.31 6 12 C 6 8.69 8.69 6 12 6 C 13.66 6 15.14 6.69 16.22 7.78 L 13 11 L 20 11 L 20 4 L 17.63 6.37 C 16.19 4.9 14.2 4 12 4 Z"
                                           Fill="#9CA3AF" Width="13" Height="13" Stretch="Uniform" SnapsToDevicePixels="True"/>
                                 </Border>
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter TargetName="btnBorder" Property="Background" Value="#37373D"/>
-                                        <Setter TargetName="btnPath" Property="Fill" Value="#60A5FA"/>
+                                        <Setter TargetName="btnBorder" Property="Background" Value="#2D2D30"/>
+                                        <Setter TargetName="btnPath" Property="Fill" Value="{DynamicResource SystemAccentBrush}"/>
                                     </Trigger>
                                 </ControlTemplate.Triggers>
                             </ControlTemplate>
                         </Button.Template>
                     </Button>
 
-                    <!-- Close (X) Button -->
+                    <!-- Settings Button (Hover System Accent, CornerRadius=0) -->
+                    <Button Click="SettingsButton_Click"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            Margin="0"
+                            ToolTip="Settings">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="settingsBorder" Background="Transparent" CornerRadius="0" Padding="8,6">
+                                    <Path x:Name="settingsPath" Data="M 12 15 C 10.34 15 9 13.66 9 12 C 9 10.34 10.34 9 12 9 C 13.66 9 15 10.34 15 12 C 15 13.66 13.66 15 12 15 Z M 19.43 12.97 C 19.47 12.65 19.5 12.33 19.5 12 C 19.5 11.67 19.47 11.34 19.43 11.03 L 21.54 9.37 C 21.73 9.22 21.78 8.95 21.66 8.73 L 19.66 5.27 C 19.54 5.05 19.27 4.96 19.05 5.05 L 16.56 6.05 C 16.04 5.66 15.48 5.32 14.87 5.07 L 14.49 2.42 C 14.46 2.18 14.25 2 14 2 L 10 2 C 9.75 2 9.54 2.18 9.51 2.42 L 9.13 5.07 C 8.52 5.32 7.96 5.66 7.44 6.05 L 4.95 5.05 C 4.73 4.96 4.46 5.05 4.34 5.27 L 2.34 8.73 C 2.21 8.95 2.27 9.22 2.46 9.37 L 4.57 11.03 C 4.53 11.34 4.5 11.67 4.5 12 C 4.5 12.33 4.53 12.65 4.57 12.97 L 2.46 14.63 C 2.27 14.78 2.21 15.05 2.34 15.27 L 4.34 18.73 C 4.46 18.95 4.73 19.03 4.95 18.95 L 7.44 17.95 C 7.96 18.34 8.52 18.68 9.13 18.93 L 9.51 21.58 C 9.54 21.82 9.75 22 10 22 L 14 22 C 14.25 22 14.46 21.82 14.49 21.58 L 14.87 18.93 C 15.48 18.68 16.04 18.34 16.56 17.95 L 19.05 18.95 C 19.27 19.03 19.54 18.95 19.66 18.73 L 21.66 15.27 C 21.78 15.05 21.73 14.78 21.54 14.63 L 19.43 12.97 Z"
+                                          Fill="#9CA3AF" Width="13" Height="13" Stretch="Uniform" SnapsToDevicePixels="True"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="settingsBorder" Property="Background" Value="#2D2D30"/>
+                                        <Setter TargetName="settingsPath" Property="Fill" Value="{DynamicResource SystemAccentBrush}"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+
+                    <!-- Close (X) Button (Hover Red #E81123, CornerRadius=0) -->
                     <Button x:Name="CloseButton"
                             Click="CloseButton_Click"
                             Background="Transparent"
                             BorderThickness="0"
                             Cursor="Hand"
+                            Margin="0"
                             ToolTip="Close window">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
-                                <Border x:Name="closeBorder" Background="Transparent" CornerRadius="4" Padding="5,4">
+                                <Border x:Name="closeBorder" Background="Transparent" CornerRadius="0" Padding="8,6">
                                     <Path x:Name="closePath" Data="M 18 6 L 6 18 M 6 6 L 18 18"
                                           Stroke="#9CA3AF" StrokeThickness="1.5" Width="12" Height="12" Stretch="Uniform" SnapsToDevicePixels="True"/>
                                 </Border>
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter TargetName="closeBorder" Property="Background" Value="#37373D"/>
-                                        <Setter TargetName="closePath" Property="Stroke" Value="#EF4444"/>
+                                        <Setter TargetName="closeBorder" Property="Background" Value="#E81123"/>
+                                        <Setter TargetName="closePath" Property="Stroke" Value="#FFFFFF"/>
                                     </Trigger>
                                 </ControlTemplate.Triggers>
                             </ControlTemplate>
@@ -159,12 +184,12 @@
             </Grid>
 
             <!-- Divider -->
-            <Rectangle Grid.Row="1" Height="1" Fill="#3F3F46" Margin="0,0,0,8" SnapsToDevicePixels="True" Grid.ColumnSpan="2"/>
+            <Rectangle Grid.Row="1" Height="1" Fill="#3A3A3C" Margin="0,2,0,8" SnapsToDevicePixels="True"/>
 
-            <!-- Device List / Empty State Container -->
-            <Grid Grid.Row="2" Grid.ColumnSpan="2">
+            <!-- Device List Container -->
+            <Grid Grid.Row="2">
                 <!-- Empty State Message -->
-                <TextBlock Text="No device found"
+                <TextBlock Text="No Bluetooth devices found"
                            Foreground="#8E8E93"
                            FontSize="12"
                            HorizontalAlignment="Center"
@@ -182,64 +207,64 @@
                     </TextBlock.Style>
                 </TextBlock>
 
-                <!-- Devices ItemsControl -->
+                <!-- Devices ItemsControl (Card Height scaled 1.5x, component sizes enlarged) -->
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <ItemsControl ItemsSource="{Binding Devices}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Border Margin="0,0,0,6" 
-                                        Background="#2D2D30" 
-                                        BorderBrush="#3E3E42"
+                                        Background="#2B2B2B" 
+                                        BorderBrush="#3A3A3C"
                                         BorderThickness="1"
-                                        CornerRadius="4" 
-                                        Padding="10,8"
+                                        CornerRadius="2" 
                                         SnapsToDevicePixels="True">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
-                                            <!-- Status Dot -->
-                                            <ColumnDefinition Width="Auto"/>
-                                            <!-- Device Info -->
+                                            <!-- Left Accent Indicator Bar (Green if connected, Gray otherwise) -->
+                                            <ColumnDefinition Width="5"/>
+                                            <!-- Card Main Content -->
                                             <ColumnDefinition Width="*"/>
-                                            <!-- Source Tag -->
-                                            <ColumnDefinition Width="Auto"/>
-                                            <!-- Battery Icon -->
-                                            <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
 
-                                        <!-- Connection Status Dot Indicator -->
-                                        <Ellipse Grid.Column="0" 
-                                                 Width="8" Height="8" 
-                                                 Fill="{Binding StatusBrush}" 
-                                                 ToolTip="{Binding StatusTooltip}"
-                                                 VerticalAlignment="Center" 
-                                                 Margin="0,0,10,0"/>
+                                        <!-- 5px Indicator Bar -->
+                                        <Rectangle Grid.Column="0" 
+                                                   Fill="{Binding IndicatorBrush}" 
+                                                   SnapsToDevicePixels="True"/>
 
-                                        <!-- Device Name -->
-                                        <TextBlock Grid.Column="1" 
-                                                   Text="{Binding Name}" 
-                                                   Foreground="#F1F1F1" 
-                                                   FontSize="12" 
-                                                   FontWeight="SemiBold"
-                                                   TextTrimming="CharacterEllipsis" 
-                                                   ToolTip="{Binding Name}"
-                                                   VerticalAlignment="Center"/>
+                                        <!-- Content Grid with 1.5x scaled padding (Margin 12,11) -->
+                                        <Grid Grid.Column="1" Margin="12,11">
+                                            <Grid.ColumnDefinitions>
+                                                <!-- Device Name -->
+                                                <ColumnDefinition Width="*"/>
+                                                <!-- Battery Percentage & Icon -->
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
 
-                                        <!-- Source Tag Badge (BLE / Classic) -->
-                                        <Border Grid.Column="2" 
-                                                Background="#1E1E1E" 
-                                                CornerRadius="3" 
-                                                Padding="5,2" 
-                                                Margin="6,0,8,0"
-                                                VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding SourceText}" 
-                                                       Foreground="#9CA3AF" 
-                                                       FontSize="9" 
-                                                       FontWeight="Bold"/>
-                                        </Border>
+                                            <!-- Scaled Device Name (13.5pt) -->
+                                            <TextBlock Grid.Column="0" 
+                                                       Text="{Binding Name}" 
+                                                       Foreground="#F1F1F1" 
+                                                       FontSize="13.5" 
+                                                       FontWeight="SemiBold"
+                                                       TextTrimming="CharacterEllipsis" 
+                                                       ToolTip="{Binding FullTooltipText}"
+                                                       VerticalAlignment="Center"/>
 
-                                        <!-- SVG Battery Icon Control with Tooltip -->
-                                        <controls:BatteryIcon Grid.Column="3" 
-                                                              VerticalAlignment="Center"/>
+                                            <!-- Scaled Battery Info Stack (Percentage Text 13pt + Win10 Battery Icon) -->
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                                <!-- Percentage Text (Hover System Accent) -->
+                                                <TextBlock Text="{Binding BatteryPercentageText}"
+                                                           Style="{StaticResource AccentTextHoverStyle}"
+                                                           FontSize="13"
+                                                           FontWeight="Bold"
+                                                           VerticalAlignment="Center"
+                                                           Margin="0,0,8,0"
+                                                           ToolTip="{Binding BatteryTooltip}"/>
+
+                                                <!-- Scaled Battery Icon -->
+                                                <controls:BatteryIcon VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Grid>
                                     </Grid>
                                 </Border>
                             </DataTemplate>
@@ -249,12 +274,21 @@
             </Grid>
 
             <!-- Footer Panel -->
-            <Grid Grid.Row="3" Margin="0,8,0,0" Grid.ColumnSpan="2">
+            <Grid Grid.Row="3" Margin="0,8,0,0">
+                <!-- Left: Last Updated Subtitle (Hover System Accent) -->
                 <TextBlock Text="{Binding LastUpdatedText}" 
-                           Foreground="#8E8E93" 
+                           Style="{StaticResource SubtitleHoverStyle}"
                            FontSize="9.5" 
                            HorizontalAlignment="Left" 
                            VerticalAlignment="Center"/>
+
+                <!-- Right: Version Subtitle (Hover System Accent) -->
+                <TextBlock Text="v1.0.0" 
+                           Style="{StaticResource SubtitleHoverStyle}"
+                           FontSize="9.5" 
+                           HorizontalAlignment="Right" 
+                           VerticalAlignment="Center"
+                           ToolTip="Version 1.0.0"/>
             </Grid>
         </Grid>
     </Border>

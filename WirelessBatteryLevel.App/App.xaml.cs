@@ -51,6 +51,8 @@ namespace WirelessBatteryLevel.App
         {
             base.OnStartup(e);
 
+            SystemThemeHelper.ApplySystemAccentColor();
+
             ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
             var trayViewModel = Services.GetRequiredService<TrayViewModel>();
