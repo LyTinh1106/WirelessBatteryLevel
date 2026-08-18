@@ -4,11 +4,11 @@
              xmlns:local="clr-namespace:WirelessBatteryLevel.App">
 
     <Application.Resources>
-        <!-- Windows 10 Dark ToolTip Style -->
+        <!-- Windows 10 ToolTip Style -->
         <Style TargetType="ToolTip">
-            <Setter Property="Background" Value="#1F1F1F"/>
-            <Setter Property="Foreground" Value="#F1F1F1"/>
-            <Setter Property="BorderBrush" Value="#3F3F46"/>
+            <Setter Property="Background" Value="#2D2D30"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#A1A1AA"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="8,5"/>
             <Setter Property="FontSize" Value="11"/>
@@ -19,7 +19,7 @@
                         <Border Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="4"
+                                CornerRadius="0"
                                 SnapsToDevicePixels="True">
                             <ContentPresenter Margin="{TemplateBinding Padding}" />
                         </Border>
@@ -27,6 +27,29 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <!-- Windows 10 Native Separator Style (Overrides MenuItem.SeparatorStyleKey to eliminate WPF's 30px Icon Gutter) -->
+        <Style x:Key="Win10SeparatorStyle" TargetType="Separator">
+            <Setter Property="Height" Value="1"/>
+            <Setter Property="Margin" Value="6,4,6,4"/>
+            <Setter Property="Background" Value="#5F5F63"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Separator">
+                        <Border Background="{TemplateBinding Background}"
+                                Height="1"
+                                HorizontalAlignment="Stretch"
+                                SnapsToDevicePixels="True"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Apply to all implicit Separators AND override WPF's default MenuItem.SeparatorStyleKey -->
+        <Style TargetType="Separator" BasedOn="{StaticResource Win10SeparatorStyle}"/>
+        <Style x:Key="{x:Static MenuItem.SeparatorStyleKey}" TargetType="Separator" BasedOn="{StaticResource Win10SeparatorStyle}"/>
 
         <!-- Subtitle Hover Style (System Accent Color on Hover) -->
         <Style x:Key="SubtitleHoverStyle" TargetType="TextBlock">
@@ -61,6 +84,113 @@
                     <Setter Property="Stroke" Value="{DynamicResource SystemAccentBrush}"/>
                 </Trigger>
             </Style.Triggers>
+        </Style>
+
+        <!-- Windows 10 ContextMenu Style (StaysOpen=False, System Accent Hover, Off-White Gray Border) -->
+        <Style x:Key="Win10ContextMenuStyle" TargetType="ContextMenu">
+            <Setter Property="Background" Value="#2D2D30"/>
+            <Setter Property="BorderBrush" Value="#A1A1AA"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="2"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="StaysOpen" Value="False"/>
+            <Setter Property="Grid.IsSharedSizeScope" Value="True"/>
+            <Setter Property="HasDropShadow" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ContextMenu">
+                        <Border x:Name="ContextMenuBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}"
+                                CornerRadius="0"
+                                SnapsToDevicePixels="True">
+                            <ScrollViewer x:Name="ContextMenuScrollViewer"
+                                          Focusable="False"
+                                          VerticalScrollBarVisibility="Auto"
+                                          HorizontalScrollBarVisibility="Disabled">
+                                <ItemsPresenter x:Name="ItemsPresenter"
+                                                KeyboardNavigation.DirectionalNavigation="Cycle"
+                                                Grid.IsSharedSizeScope="True"
+                                                SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                            </ScrollViewer>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Windows 10 MenuItem Style (Dynamic Checkmark Column 18px / 0px, Wider Obtuse ">" Chevron) -->
+        <Style x:Key="Win10MenuItemStyle" TargetType="MenuItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="6,5"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="MenuItem">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" CornerRadius="0" SnapsToDevicePixels="True">
+                            <Grid TextElement.Foreground="#FFFFFF">
+                                <Grid.ColumnDefinitions>
+                                    <!-- Dynamic Checkmark Column (18px when IsCheckable=True, 0px when IsCheckable=False) -->
+                                    <ColumnDefinition x:Name="IconColumn" Width="18"/>
+                                    <!-- Header Text Column -->
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto" SharedSizeGroup="Shortcut"/>
+                                    <!-- Submenu Arrow Column -->
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Dedicated Checkmark Glyph -->
+                                <TextBlock x:Name="Glyph" Grid.Column="0" Text="✓" Foreground="{DynamicResource SystemAccentBrush}" FontWeight="Bold" FontSize="11" Visibility="Hidden" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+
+                                <!-- Header Content -->
+                                <ContentPresenter Grid.Column="1" ContentSource="Header" TextElement.Foreground="#FFFFFF" VerticalAlignment="Center" Margin="2,0,10,0"/>
+
+                                <!-- Submenu Expand Arrow Icon: Larger, Wider Obtuse Chevron Vector Path -->
+                                <Path x:Name="Arrow" Grid.Column="3" Data="M 1 2 L 7 8 L 1 14" Stroke="#A1A1AA" StrokeThickness="2" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Visibility="Collapsed" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="8,0,4,0" SnapsToDevicePixels="True"/>
+
+                                <!-- Popup for SubMenu -->
+                                <Popup x:Name="Popup" Placement="Right" HorizontalOffset="1" IsOpen="{TemplateBinding IsSubmenuOpen}" AllowsTransparency="True" Focusable="False" PopupAnimation="Fade">
+                                    <Border Background="#2D2D30" BorderBrush="#A1A1AA" BorderThickness="1" Padding="3" CornerRadius="0" SnapsToDevicePixels="True">
+                                        <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle"/>
+                                    </Border>
+                                </Popup>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <!-- Hide Icon Column for Non-Checkable Submenus & Actions -->
+                            <Trigger Property="IsCheckable" Value="False">
+                                <Setter TargetName="IconColumn" Property="Width" Value="0"/>
+                                <Setter TargetName="Glyph" Property="Visibility" Value="Collapsed"/>
+                            </Trigger>
+
+                            <!-- Checkmark Visibility Trigger -->
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Glyph" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+
+                            <!-- Submenu Arrow Trigger -->
+                            <Trigger Property="HasItems" Value="True">
+                                <Setter TargetName="Arrow" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+
+                            <!-- Highlight / Hover Trigger -->
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SystemAccentBrush}"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                                <Setter TargetName="Glyph" Property="Foreground" Value="#FFFFFF"/>
+                                <Setter TargetName="Arrow" Property="Stroke" Value="#FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
     </Application.Resources>
 

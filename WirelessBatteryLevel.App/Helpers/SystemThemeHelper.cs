@@ -56,5 +56,19 @@ namespace WirelessBatteryLevel.App.Helpers
                 }
             }
         }
+
+        public static System.Drawing.Color GetSystemAccentDrawingColor()
+        {
+            try
+            {
+                var uiSettings = new UISettings();
+                var c = uiSettings.GetColorValue(UIColorType.Accent);
+                return System.Drawing.Color.FromArgb(c.A, c.R, c.G, c.B);
+            }
+            catch
+            {
+                return System.Drawing.Color.FromArgb(0, 120, 212); // #0078D4
+            }
+        }
     }
 }

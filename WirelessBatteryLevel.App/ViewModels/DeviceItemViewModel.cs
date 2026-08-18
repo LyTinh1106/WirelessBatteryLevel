@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using WirelessBatteryLevel.App.Services;
 using WirelessBatteryLevel.Core.Models;
 using Brush = System.Windows.Media.Brush;
 using Color = System.Windows.Media.Color;
@@ -16,6 +17,7 @@ namespace WirelessBatteryLevel.App.ViewModels
         private static readonly Brush GreenBatteryBrush = CreateFrozenBrush("#10B981");
         private static readonly Brush YellowBatteryBrush = CreateFrozenBrush("#F59E0B");
         private static readonly Brush RedBatteryBrush = CreateFrozenBrush("#EF4444");
+        private static readonly Brush WhiteBatteryBrush = CreateFrozenBrush("#FFFFFF");
 
         private static Brush CreateFrozenBrush(string hex)
         {
@@ -29,6 +31,7 @@ namespace WirelessBatteryLevel.App.ViewModels
         public DeviceItemViewModel(DeviceStatus status)
         {
             _status = status;
+            AppSettingsService.Instance.SettingsChanged += (s, e) => OnPropertyChanged(nameof(BatteryFillBrush));
             UpdateFromStatus(status);
         }
 
@@ -70,6 +73,11 @@ namespace WirelessBatteryLevel.App.ViewModels
                 if (!HasBattery || !BatteryLevel.HasValue)
                 {
                     return GrayBrush;
+                }
+
+                if (AppSettingsService.Instance.BatteryColorMode == BatteryColorMode.DefaultWhite)
+                {
+                    return WhiteBatteryBrush;
                 }
 
                 var level = BatteryLevel.Value;

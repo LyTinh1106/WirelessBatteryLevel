@@ -1,8 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Drawing;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Forms;
+using System.Windows.Interop;
 using WirelessBatteryLevel.App.Helpers;
 using WirelessBatteryLevel.App.ViewModels;
 using WirelessBatteryLevel.Core.Interfaces;
@@ -16,6 +17,10 @@ namespace WirelessBatteryLevel.App
     {
         private NotifyIcon? _notifyIcon;
         public IServiceProvider Services { get; }
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
 
         public App()
         {
@@ -74,54 +79,31 @@ namespace WirelessBatteryLevel.App
                 Visible = true
             };
 
-            // Toggle Flyout Window on click
-            _notifyIcon.Click += (sender, args) =>
+            // Mouse click handling: Left-click toggles Flyout Window, Right-click opens modern WPF ContextMenu
+            _notifyIcon.MouseUp += (sender, args) =>
             {
-                if (args is MouseEventArgs mouseArgs && mouseArgs.Button == MouseButtons.Left)
+                if (args.Button == MouseButtons.Left)
                 {
                     mainWindow.ToggleVisibility();
                 }
+                else if (args.Button == MouseButtons.Right)
+                {
+                    if (mainWindow.ActiveContextMenu != null && mainWindow.ActiveContextMenu.IsOpen)
+                    {
+                        mainWindow.CloseActiveContextMenu();
+                        return;
+                    }
+
+                    // Win32 Requirement: Set foreground window before opening tray context menu
+                    // so Windows routes click-outside dismissal events to the WPF ContextMenu.
+                    var handle = new WindowInteropHelper(mainWindow).EnsureHandle();
+                    SetForegroundWindow(handle);
+
+                    var wpfContextMenu = mainWindow.CreateSettingsContextMenu(includeExitItem: true);
+                    wpfContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.MousePoint;
+                    wpfContextMenu.IsOpen = true;
+                }
             };
-
-            // Create Dark Gray Context Menu for Tray Icon
-            var contextMenu = new ContextMenuStrip
-            {
-                Renderer = new ToolStripProfessionalRenderer(new DarkGrayColorTable()),
-                ForeColor = System.Drawing.Color.FromArgb(225, 225, 225),
-                BackColor = System.Drawing.Color.FromArgb(37, 37, 38),
-                ShowImageMargin = false
-            };
-            
-            contextMenu.Items.Add("Show device list", null, (sender, e) =>
-            {
-                mainWindow.ToggleVisibility();
-            });
-
-            contextMenu.Items.Add(new ToolStripSeparator());
-
-            contextMenu.Items.Add("Exit", null, (sender, e) =>
-            {
-                _notifyIcon.Visible = false;
-                _notifyIcon.Dispose();
-                System.Windows.Application.Current.Shutdown();
-            });
-
-            _notifyIcon.ContextMenuStrip = contextMenu;
-        }
-
-        private class DarkGrayColorTable : ProfessionalColorTable
-        {
-            public override System.Drawing.Color ToolStripDropDownBackground => System.Drawing.Color.FromArgb(37, 37, 38);
-            public override System.Drawing.Color ImageMarginGradientBegin => System.Drawing.Color.FromArgb(37, 37, 38);
-            public override System.Drawing.Color ImageMarginGradientMiddle => System.Drawing.Color.FromArgb(37, 37, 38);
-            public override System.Drawing.Color ImageMarginGradientEnd => System.Drawing.Color.FromArgb(37, 37, 38);
-            public override System.Drawing.Color MenuItemSelected => System.Drawing.Color.FromArgb(55, 55, 61);
-            public override System.Drawing.Color MenuItemSelectedGradientBegin => System.Drawing.Color.FromArgb(55, 55, 61);
-            public override System.Drawing.Color MenuItemSelectedGradientEnd => System.Drawing.Color.FromArgb(55, 55, 61);
-            public override System.Drawing.Color MenuItemBorder => System.Drawing.Color.FromArgb(63, 63, 70);
-            public override System.Drawing.Color MenuBorder => System.Drawing.Color.FromArgb(63, 63, 70);
-            public override System.Drawing.Color SeparatorDark => System.Drawing.Color.FromArgb(63, 63, 70);
-            public override System.Drawing.Color SeparatorLight => System.Drawing.Color.FromArgb(45, 45, 48);
         }
 
         protected override void OnExit(ExitEventArgs e)
