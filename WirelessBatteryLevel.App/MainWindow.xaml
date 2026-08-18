@@ -369,12 +369,12 @@
                            VerticalAlignment="Center"/>
 
                 <!-- Right: Version Subtitle (Hover System Accent) -->
-                <TextBlock Text="v1.0.0" 
+                <TextBlock Text="v1.1.0" 
                            Style="{StaticResource SubtitleHoverStyle}"
                            FontSize="9.5" 
                            HorizontalAlignment="Right" 
                            VerticalAlignment="Center"
-                           ToolTip="Version 1.0.0"/>
+                           ToolTip="Version 1.1.0"/>
             </Grid>
         </Grid>
     </Border>
