@@ -2,7 +2,6 @@ using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
-using System.Drawing.Text;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows.Media;
@@ -79,78 +78,43 @@ namespace WirelessBatteryLevel.App
             using var bmp = new Bitmap(size, size, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
             using (var g = Graphics.FromImage(bmp))
             {
-                g.SmoothingMode = SmoothingMode.AntiAlias;
-                g.TextRenderingHint = TextRenderingHint.ClearTypeGridFit;
+                g.SmoothingMode = SmoothingMode.None; // SHARP CRISP VECTOR CORNERS
+                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                g.PixelOffsetMode = PixelOffsetMode.HighQuality;
                 g.Clear(System.Drawing.Color.Transparent);
 
-                // Top Battery Nipple / Cap
-                int capWidth = 72;
-                int capHeight = 20;
-                int capX = (size - capWidth) / 2;
-                int capY = 4;
-                using (var capBrush = new SolidBrush(System.Drawing.Color.FromArgb(255, 20, 20, 20)))
+                using var whiteBrush = new SolidBrush(System.Drawing.Color.White);
+                using var whitePen = new System.Drawing.Pen(System.Drawing.Color.White, 14)
                 {
-                    g.FillRectangle(capBrush, capX, capY, capWidth, capHeight);
-                }
+                    LineJoin = LineJoin.Miter, // SHARP 90-DEGREE CORNERS
+                    MiterLimit = 10
+                };
 
-                // Battery Body Dimensions (Slimmer & Taller proportions)
-                int bodyX = 44;
-                int bodyY = 22;
-                int bodyWidth = 168;
-                int bodyHeight = 228;
-                int cornerRadius = 22;
+                // Sleek & Tall Vertical Battery Layout (Monochrome Crisp White Concept)
+                // 1. Top Battery Terminal Stud (Solid White Rectangle Centered on Top)
+                int studWidth = 48;
+                int studHeight = 16;
+                int studX = (size - studWidth) / 2; // 104
+                int studY = 10;
+                g.FillRectangle(whiteBrush, studX, studY, studWidth, studHeight);
 
-                // Inner Fill Area
-                int innerMargin = 12;
-                int innerX = bodyX + innerMargin;
-                int innerY = bodyY + innerMargin;
-                int innerWidth = bodyWidth - (innerMargin * 2);
-                int innerHeight = bodyHeight - (innerMargin * 2);
-                int innerRadius = 14;
+                // 2. Sharp Taller Outer Body Outline (14px White Stroke, 0-Radius Corners)
+                int bodyWidth = 124;
+                int bodyHeight = 216;
+                int bodyX = (size - bodyWidth) / 2; // 66
+                int bodyY = 26;
+                g.DrawRectangle(whitePen, bodyX + 7, bodyY + 7, bodyWidth - 14, bodyHeight - 14);
 
-                // Create rounded clip path for inner battery fill
-                using (var innerPath = GetRoundedPath(innerX, innerY, innerWidth, innerHeight, innerRadius))
-                {
-                    var oldClip = g.Clip;
-                    g.SetClip(innerPath);
+                // 3. Sharp Inner Battery Fill Level (75% Vertical Fill - Solid White Rectangle from Bottom Up)
+                int innerX = bodyX + 20;
+                int innerY = bodyY + 20;
+                int innerWidth = bodyWidth - 40;
+                int innerHeight = bodyHeight - 40;
 
-                    // Top 35% Gray Unfilled Area
-                    int top35Height = (int)(innerHeight * 0.35);
-                    using (var grayBrush = new SolidBrush(System.Drawing.Color.FromArgb(255, 71, 85, 105)))
-                    {
-                        g.FillRectangle(grayBrush, innerX, innerY, innerWidth, top35Height);
-                    }
+                int fillH = (int)(innerHeight * 0.75); // 75% Fill Level
+                int fillY = innerY + (innerHeight - fillH); // Rises from bottom
 
-                    // Bottom 65% Green Filled Area
-                    int bottom65Height = innerHeight - top35Height;
-                    using (var greenBrush = new SolidBrush(System.Drawing.Color.FromArgb(255, 34, 197, 94)))
-                    {
-                        g.FillRectangle(greenBrush, innerX, innerY + top35Height, innerWidth, bottom65Height);
-                    }
-
-                    g.Clip = oldClip;
-                }
-
-                // Draw "ZTK" Text in the exact Middle of Battery Body
-                using (var font = new Font("Arial Black", 58, System.Drawing.FontStyle.Regular, GraphicsUnit.Pixel))
-                using (var textBrush = new SolidBrush(System.Drawing.Color.FromArgb(255, 15, 23, 42))) // High contrast dark text
-                {
-                    var sf = new StringFormat
-                    {
-                        Alignment = StringAlignment.Center,
-                        LineAlignment = StringAlignment.Center
-                    };
-
-                    var textRect = new RectangleF(bodyX - 4, bodyY + (bodyHeight - 86) / 2.0f, bodyWidth + 8, 86);
-                    g.DrawString("ZTK", font, textBrush, textRect, sf);
-                }
-
-                // Outer Black Border
-                using (var borderPen = new System.Drawing.Pen(System.Drawing.Color.Black, 16))
-                {
-                    borderPen.LineJoin = LineJoin.Round;
-                    DrawRoundedRectangle(g, borderPen, bodyX, bodyY, bodyWidth, bodyHeight, cornerRadius);
-                }
+                g.FillRectangle(whiteBrush, innerX, fillY, innerWidth, fillH);
             }
 
             var ms = new MemoryStream();
@@ -168,32 +132,6 @@ namespace WirelessBatteryLevel.App
             }
             ms.Position = 0;
             return ms;
-        }
-
-        private static void FillRoundedRectangle(Graphics g, System.Drawing.Brush brush, int x, int y, int width, int height, int radius)
-        {
-            using var path = GetRoundedPath(x, y, width, height, radius);
-            g.FillPath(brush, path);
-        }
-
-        private static void DrawRoundedRectangle(Graphics g, System.Drawing.Pen pen, int x, int y, int width, int height, int radius)
-        {
-            using var path = GetRoundedPath(x, y, width, height, radius);
-            g.DrawPath(pen, path);
-        }
-
-        private static GraphicsPath GetRoundedPath(int x, int y, int width, int height, int radius)
-        {
-            var path = new GraphicsPath();
-            int diameter = radius * 2;
-
-            path.AddArc(x, y, diameter, diameter, 180, 90);
-            path.AddArc(x + width - diameter, y, diameter, diameter, 270, 90);
-            path.AddArc(x + width - diameter, y + height - diameter, diameter, diameter, 0, 90);
-            path.AddArc(x, y + height - diameter, diameter, diameter, 90, 90);
-            path.CloseFigure();
-
-            return path;
         }
     }
 }
