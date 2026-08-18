@@ -134,6 +134,135 @@ namespace WirelessBatteryLevel.App
             }
         }
 
+        private void DeviceCard_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            ResetAutoCloseTimer();
+
+            if (ActiveContextMenu != null && ActiveContextMenu.IsOpen)
+            {
+                CloseActiveContextMenu();
+                return;
+            }
+
+            if (sender is FrameworkElement cardElement && cardElement.DataContext is DeviceItemViewModel vm)
+            {
+                var contextMenu = CreateDeviceCardContextMenu(vm);
+                ActiveContextMenu = contextMenu;
+                contextMenu.PlacementTarget = cardElement;
+                contextMenu.Placement = PlacementMode.MousePoint;
+                contextMenu.IsOpen = true;
+            }
+        }
+
+        public ContextMenu CreateDeviceCardContextMenu(DeviceItemViewModel targetVm)
+        {
+            var contextMenu = new ContextMenu
+            {
+                Style = (Style)FindResource("Win10ContextMenuStyle"),
+                StaysOpen = false
+            };
+
+            // 5-second Auto-close Timer for Menu
+            var menuAutoCloseTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(5)
+            };
+            menuAutoCloseTimer.Tick += (s, e) =>
+            {
+                menuAutoCloseTimer.Stop();
+                if (contextMenu.IsOpen)
+                {
+                    contextMenu.IsOpen = false;
+                }
+            };
+
+            MouseButtonEventHandler outsideClickHandler = (s, e) =>
+            {
+                if (contextMenu.IsOpen)
+                {
+                    contextMenu.IsOpen = false;
+                }
+            };
+
+            contextMenu.Opened += (s, e) =>
+            {
+                menuAutoCloseTimer.Stop();
+                menuAutoCloseTimer.Start();
+                Mouse.Capture(contextMenu, CaptureMode.SubTree);
+                Mouse.AddPreviewMouseDownOutsideCapturedElementHandler(contextMenu, outsideClickHandler);
+            };
+
+            contextMenu.Closed += (s, e) =>
+            {
+                Mouse.RemovePreviewMouseDownOutsideCapturedElementHandler(contextMenu, outsideClickHandler);
+                if (Mouse.Captured == contextMenu)
+                {
+                    Mouse.Capture(null);
+                }
+                menuAutoCloseTimer.Stop();
+                if (ActiveContextMenu == contextMenu)
+                {
+                    ActiveContextMenu = null;
+                }
+            };
+
+            contextMenu.MouseEnter += (s, e) => menuAutoCloseTimer.Stop();
+            contextMenu.MouseLeave += (s, e) =>
+            {
+                if (contextMenu.IsOpen)
+                {
+                    menuAutoCloseTimer.Stop();
+                    menuAutoCloseTimer.Start();
+                }
+            };
+
+            // Fancy Battery Display Style Options Per-Device Card
+            var classicItem = new MenuItem
+            {
+                Header = "Classic Battery (Default)",
+                IsCheckable = true,
+                IsChecked = targetVm.DisplayStyle == BatteryDisplayStyle.ClassicBattery,
+                Style = (Style)FindResource("Win10MenuItemStyle")
+            };
+            classicItem.Click += (s, e) =>
+            {
+                targetVm.DisplayStyle = BatteryDisplayStyle.ClassicBattery;
+                contextMenu.IsOpen = false;
+            };
+
+            var barItem = new MenuItem
+            {
+                Header = "Linear Capsule Bar",
+                IsCheckable = true,
+                IsChecked = targetVm.DisplayStyle == BatteryDisplayStyle.LinearCapsuleBar,
+                Style = (Style)FindResource("Win10MenuItemStyle")
+            };
+            barItem.Click += (s, e) =>
+            {
+                targetVm.DisplayStyle = BatteryDisplayStyle.LinearCapsuleBar;
+                contextMenu.IsOpen = false;
+            };
+
+            var ringItem = new MenuItem
+            {
+                Header = "Circular Ring Gauge",
+                IsCheckable = true,
+                IsChecked = targetVm.DisplayStyle == BatteryDisplayStyle.CircularRingGauge,
+                Style = (Style)FindResource("Win10MenuItemStyle")
+            };
+            ringItem.Click += (s, e) =>
+            {
+                targetVm.DisplayStyle = BatteryDisplayStyle.CircularRingGauge;
+                contextMenu.IsOpen = false;
+            };
+
+            contextMenu.Items.Add(classicItem);
+            contextMenu.Items.Add(barItem);
+            contextMenu.Items.Add(ringItem);
+
+            return contextMenu;
+        }
+
         public ContextMenu CreateSettingsContextMenu(bool includeExitItem = false)
         {
             var contextMenu = new ContextMenu
@@ -264,15 +393,15 @@ namespace WirelessBatteryLevel.App
                 refreshMenu.Items.Add(item);
             }
 
-            // 3. Set Battery Color Mode Sub-Menu
+            // 3. Battery Color Display Mode Sub-Menu
             var batteryColorMenu = new MenuItem
             {
-                Header = "Set Battery Color",
+                Header = "Battery Color Display Mode",
                 Style = (Style)FindResource("Win10MenuItemStyle")
             };
             var defaultWhiteItem = new MenuItem
             {
-                Header = "Default (White)",
+                Header = "Monochrome Mode",
                 IsCheckable = true,
                 IsChecked = AppSettingsService.Instance.BatteryColorMode == BatteryColorMode.DefaultWhite,
                 Style = (Style)FindResource("Win10MenuItemStyle")
@@ -285,7 +414,7 @@ namespace WirelessBatteryLevel.App
 
             var dynamicColorItem = new MenuItem
             {
-                Header = "Display Battery Color",
+                Header = "Color Mode",
                 IsCheckable = true,
                 IsChecked = AppSettingsService.Instance.BatteryColorMode == BatteryColorMode.DynamicColors,
                 Style = (Style)FindResource("Win10MenuItemStyle")

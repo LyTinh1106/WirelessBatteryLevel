@@ -1,0 +1,108 @@
+<UserControl x:Class="WirelessBatteryLevel.App.Controls.SegmentedBarIcon"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             SnapsToDevicePixels="True"
+             UseLayoutRounding="True"
+             Height="18"
+             HorizontalAlignment="Stretch">
+
+    <UserControl.Resources>
+        <!-- Outer Frame Outline Style (Default #D1D5DB, Hover SystemAccentBrush) -->
+        <Style x:Key="BarOutlineHoverStyle" TargetType="Rectangle">
+            <Setter Property="Stroke" Value="#D1D5DB"/>
+            <Setter Property="StrokeThickness" Value="1"/>
+            <Setter Property="Fill" Value="Transparent"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
+                    <Setter Property="Stroke" Value="{DynamicResource SystemAccentBrush}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid ToolTip="{Binding BatteryTooltip}" Background="Transparent" SnapsToDevicePixels="True" VerticalAlignment="Center">
+        <Grid Height="16" HorizontalAlignment="Stretch" SnapsToDevicePixels="True">
+            <!-- 1. Outer Outline Frame (Classic Battery Hover Accent) -->
+            <Rectangle Style="{StaticResource BarOutlineHoverStyle}" SnapsToDevicePixels="True"/>
+
+            <!-- 2. Inner Segment Container (Padding 2.5px from outer frame) -->
+            <Grid Margin="2.5,2.5" SnapsToDevicePixels="True">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="4"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="4"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="4"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="4"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Segment 1 (Supports 0%, 50% Half-Bar, 100% Full-Bar) -->
+                <Grid x:Name="SegContainer1" Grid.Column="0" Background="Transparent" SizeChanged="SegContainer_SizeChanged">
+                    <Rectangle x:Name="SegUnlit1" Fill="#3F3F46" SnapsToDevicePixels="True"/>
+                    <Rectangle x:Name="SegAccentHover1" Fill="{DynamicResource SystemAccentBrush}" Opacity="0" SnapsToDevicePixels="True"/>
+                    <Border x:Name="SegLitContainer1" HorizontalAlignment="Left" Width="0" ClipToBounds="True" SnapsToDevicePixels="True">
+                        <Grid x:Name="SegLitGrid1" HorizontalAlignment="Stretch">
+                            <Rectangle x:Name="SegLitFill1" SnapsToDevicePixels="True"/>
+                            <Rectangle x:Name="SegBrightHover1" Fill="#FFFFFF" Opacity="0" SnapsToDevicePixels="True"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <!-- Segment 2 (Supports 0%, 50% Half-Bar, 100% Full-Bar) -->
+                <Grid x:Name="SegContainer2" Grid.Column="2" Background="Transparent" SizeChanged="SegContainer_SizeChanged">
+                    <Rectangle x:Name="SegUnlit2" Fill="#3F3F46" SnapsToDevicePixels="True"/>
+                    <Rectangle x:Name="SegAccentHover2" Fill="{DynamicResource SystemAccentBrush}" Opacity="0" SnapsToDevicePixels="True"/>
+                    <Border x:Name="SegLitContainer2" HorizontalAlignment="Left" Width="0" ClipToBounds="True" SnapsToDevicePixels="True">
+                        <Grid x:Name="SegLitGrid2" HorizontalAlignment="Stretch">
+                            <Rectangle x:Name="SegLitFill2" SnapsToDevicePixels="True"/>
+                            <Rectangle x:Name="SegBrightHover2" Fill="#FFFFFF" Opacity="0" SnapsToDevicePixels="True"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <!-- Segment 3 (Supports 0%, 50% Half-Bar, 100% Full-Bar) -->
+                <Grid x:Name="SegContainer3" Grid.Column="4" Background="Transparent" SizeChanged="SegContainer_SizeChanged">
+                    <Rectangle x:Name="SegUnlit3" Fill="#3F3F46" SnapsToDevicePixels="True"/>
+                    <Rectangle x:Name="SegAccentHover3" Fill="{DynamicResource SystemAccentBrush}" Opacity="0" SnapsToDevicePixels="True"/>
+                    <Border x:Name="SegLitContainer3" HorizontalAlignment="Left" Width="0" ClipToBounds="True" SnapsToDevicePixels="True">
+                        <Grid x:Name="SegLitGrid3" HorizontalAlignment="Stretch">
+                            <Rectangle x:Name="SegLitFill3" SnapsToDevicePixels="True"/>
+                            <Rectangle x:Name="SegBrightHover3" Fill="#FFFFFF" Opacity="0" SnapsToDevicePixels="True"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <!-- Segment 4 (Supports 0%, 50% Half-Bar, 100% Full-Bar) -->
+                <Grid x:Name="SegContainer4" Grid.Column="6" Background="Transparent" SizeChanged="SegContainer_SizeChanged">
+                    <Rectangle x:Name="SegUnlit4" Fill="#3F3F46" SnapsToDevicePixels="True"/>
+                    <Rectangle x:Name="SegAccentHover4" Fill="{DynamicResource SystemAccentBrush}" Opacity="0" SnapsToDevicePixels="True"/>
+                    <Border x:Name="SegLitContainer4" HorizontalAlignment="Left" Width="0" ClipToBounds="True" SnapsToDevicePixels="True">
+                        <Grid x:Name="SegLitGrid4" HorizontalAlignment="Stretch">
+                            <Rectangle x:Name="SegLitFill4" SnapsToDevicePixels="True"/>
+                            <Rectangle x:Name="SegBrightHover4" Fill="#FFFFFF" Opacity="0" SnapsToDevicePixels="True"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <!-- Segment 5 (Supports 0%, 50% Half-Bar, 100% Full-Bar) -->
+                <Grid x:Name="SegContainer5" Grid.Column="8" Background="Transparent" SizeChanged="SegContainer_SizeChanged">
+                    <Rectangle x:Name="SegUnlit5" Fill="#3F3F46" SnapsToDevicePixels="True"/>
+                    <Rectangle x:Name="SegAccentHover5" Fill="{DynamicResource SystemAccentBrush}" Opacity="0" SnapsToDevicePixels="True"/>
+                    <Border x:Name="SegLitContainer5" HorizontalAlignment="Left" Width="0" ClipToBounds="True" SnapsToDevicePixels="True">
+                        <Grid x:Name="SegLitGrid5" HorizontalAlignment="Stretch">
+                            <Rectangle x:Name="SegLitFill5" SnapsToDevicePixels="True"/>
+                            <Rectangle x:Name="SegBrightHover5" Fill="#FFFFFF" Opacity="0" SnapsToDevicePixels="True"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

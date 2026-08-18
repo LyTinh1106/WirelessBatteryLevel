@@ -27,11 +27,16 @@ namespace WirelessBatteryLevel.App.ViewModels
         }
 
         private DeviceStatus _status;
+        private BatteryDisplayStyle _displayStyle = BatteryDisplayStyle.ClassicBattery;
 
         public DeviceItemViewModel(DeviceStatus status)
         {
             _status = status;
-            AppSettingsService.Instance.SettingsChanged += (s, e) => OnPropertyChanged(nameof(BatteryFillBrush));
+            AppSettingsService.Instance.SettingsChanged += (s, e) =>
+            {
+                OnPropertyChanged(nameof(BatteryFillBrush));
+                OnPropertyChanged(nameof(IsMonochromeMode));
+            };
             UpdateFromStatus(status);
         }
 
@@ -65,6 +70,27 @@ namespace WirelessBatteryLevel.App.ViewModels
         public int? BatteryLevel => HasBattery ? _status.Battery?.Level : null;
 
         public string BatteryTooltip => HasBattery ? $"{BatteryLevel}%" : "0%";
+
+        public BatteryDisplayStyle DisplayStyle
+        {
+            get => _displayStyle;
+            set
+            {
+                if (_displayStyle != value)
+                {
+                    _displayStyle = value;
+                    OnPropertyChanged(nameof(DisplayStyle));
+                    OnPropertyChanged(nameof(IsLinearBarMode));
+                    OnPropertyChanged(nameof(IsClassicMode));
+                }
+            }
+        }
+
+        public bool IsLinearBarMode => DisplayStyle == BatteryDisplayStyle.LinearCapsuleBar;
+
+        public bool IsClassicMode => !IsLinearBarMode;
+
+        public bool IsMonochromeMode => AppSettingsService.Instance.BatteryColorMode == BatteryColorMode.DefaultWhite;
 
         public Brush BatteryFillBrush
         {

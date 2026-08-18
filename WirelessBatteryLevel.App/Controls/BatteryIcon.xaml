@@ -54,10 +54,36 @@
             <!-- Inner Dynamic Fill Bar (Adjusted to 27px for Perfectly Balanced Right Gap at 100%) -->
             <Border Canvas.Left="3" Canvas.Top="3" Height="12" CornerRadius="0" ClipToBounds="True" SnapsToDevicePixels="True">
                 <Grid Width="27">
+                    <!-- Base Fill Bar (Accent on hover in Monochrome Mode, Dynamic Color in Color Mode) -->
                     <Rectangle HorizontalAlignment="Left"
-                               Fill="{Binding BatteryFillBrush}"
                                Height="12"
                                SnapsToDevicePixels="True">
+                        <Rectangle.Style>
+                            <Style TargetType="Rectangle">
+                                <Setter Property="Fill" Value="{Binding BatteryFillBrush}"/>
+                                <Setter Property="Width">
+                                    <Setter.Value>
+                                        <MultiBinding Converter="{StaticResource WidthConverter}" ConverterParameter="27">
+                                            <Binding Path="BatteryLevelWidthRatio" />
+                                        </MultiBinding>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <!-- In Monochrome Mode: Change fill to SystemAccentBrush on hover -->
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Border}}" Value="True"/>
+                                            <Condition Binding="{Binding IsMonochromeMode}" Value="True"/>
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter Property="Fill" Value="{DynamicResource SystemAccentBrush}"/>
+                                    </MultiDataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Rectangle.Style>
+                    </Rectangle>
+
+                    <!-- White Brightness Overlay (Brightens dynamic color by 35% on hover in Color Mode) -->
+                    <Rectangle HorizontalAlignment="Left" Fill="#FFFFFF" Height="12" SnapsToDevicePixels="True">
                         <Rectangle.Style>
                             <Style TargetType="Rectangle">
                                 <Setter Property="Width">
@@ -67,6 +93,17 @@
                                         </MultiBinding>
                                     </Setter.Value>
                                 </Setter>
+                                <Setter Property="Opacity" Value="0"/>
+                                <Style.Triggers>
+                                    <!-- In Color Mode: Brighten existing dynamic color on hover -->
+                                    <MultiDataTrigger>
+                                         <MultiDataTrigger.Conditions>
+                                             <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Border}}" Value="True"/>
+                                             <Condition Binding="{Binding IsMonochromeMode}" Value="False"/>
+                                         </MultiDataTrigger.Conditions>
+                                        <Setter Property="Opacity" Value="0.35"/>
+                                    </MultiDataTrigger>
+                                </Style.Triggers>
                             </Style>
                         </Rectangle.Style>
                     </Rectangle>
