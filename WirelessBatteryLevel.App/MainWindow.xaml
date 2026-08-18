@@ -95,7 +95,7 @@
                 <!-- Title & Author -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="Wireless Battery" 
-                               Foreground="#F1F1F1" 
+                               Style="{StaticResource AccentTextHoverStyle}"
                                FontWeight="SemiBold" 
                                FontSize="13.5" 
                                VerticalAlignment="Center"/>
@@ -189,10 +189,20 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Border Margin="0,0,0,6" 
-                                        Background="#2B2B2B" 
                                         BorderThickness="0"
                                         CornerRadius="2" 
+                                        Cursor="Hand"
                                         SnapsToDevicePixels="True">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="#2B2B2B"/>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#38383B"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <!-- Left Accent Indicator Bar (Green if connected, Gray otherwise) -->
@@ -215,10 +225,10 @@
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
 
-                                            <!-- Scaled Device Name (13.5pt) -->
+                                            <!-- Scaled Device Name (13.5pt, Hover System Accent) -->
                                             <TextBlock Grid.Column="0" 
                                                        Text="{Binding Name}" 
-                                                       Foreground="#F1F1F1" 
+                                                       Style="{StaticResource AccentTextHoverStyle}"
                                                        FontSize="13.5" 
                                                        FontWeight="SemiBold"
                                                        TextTrimming="CharacterEllipsis" 

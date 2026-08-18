@@ -12,21 +12,43 @@
 
     <UserControl.Resources>
         <local:BatteryWidthConverter x:Key="WidthConverter"/>
+
+        <!-- Battery Outer Outline Hover System Accent Style (Zero Position/Ratio Modification) -->
+        <Style x:Key="BatteryOutlineHoverStyle" TargetType="Rectangle">
+            <Setter Property="Stroke" Value="#D1D5DB"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
+                    <Setter Property="Stroke" Value="{DynamicResource SystemAccentBrush}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Battery Stud Terminal Hover System Accent Style (Zero Position/Ratio Modification) -->
+        <Style x:Key="BatteryStudHoverStyle" TargetType="Rectangle">
+            <Setter Property="Fill" Value="#D1D5DB"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
+                    <Setter Property="Fill" Value="{DynamicResource SystemAccentBrush}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </UserControl.Resources>
 
     <Grid ToolTip="{Binding BatteryTooltip}" Background="Transparent" SnapsToDevicePixels="True">
         <!-- SVG Vector Windows 10 Native Battery Icon Container -->
         <Canvas Width="36" Height="18" HorizontalAlignment="Center" VerticalAlignment="Center" SnapsToDevicePixels="True">
-            <!-- Outer Battery Outline -->
+            <!-- Outer Battery Outline (Position & Ratios Untouched, Stroke Changes to System Accent on Hover) -->
             <Rectangle Canvas.Left="0.5" Canvas.Top="0.5" Width="32" Height="17"
-                       Stroke="#D1D5DB"
+                       Style="{StaticResource BatteryOutlineHoverStyle}"
                        StrokeThickness="1"
                        Fill="Transparent"
                        SnapsToDevicePixels="True"/>
 
-            <!-- Solid Battery Stud / Nipple Terminal on Right -->
+            <!-- Solid Battery Stud / Nipple Terminal on Right (Position & Ratios Untouched, Fill Changes to System Accent on Hover) -->
             <Rectangle Canvas.Left="32" Canvas.Top="5" Width="3" Height="8"
-                       Fill="#D1D5DB"
+                       Style="{StaticResource BatteryStudHoverStyle}"
                        SnapsToDevicePixels="True"/>
 
             <!-- Inner Dynamic Fill Bar (Adjusted to 27px for Perfectly Balanced Right Gap at 100%) -->
