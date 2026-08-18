@@ -272,52 +272,84 @@
                                             </Grid>
 
                                             <!-- Expanded 2-Row Layout (Linear Segmented LED Bar Mode) -->
-                                            <Grid x:Name="SegmentedBarLayout">
-                                                <Grid.Style>
-                                                    <Style TargetType="Grid">
-                                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding IsLinearBarMode}" Value="True">
-                                                                <Setter Property="Visibility" Value="Visible"/>
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Grid.Style>
-                                                <Grid.RowDefinitions>
-                                                    <!-- Row 0: Device Name (Left) + Percentage (Right) -->
-                                                    <RowDefinition Height="Auto"/>
-                                                    <!-- Row 1: Segmented LED Bar (Full Width Bottom) -->
-                                                    <RowDefinition Height="Auto"/>
-                                                </Grid.RowDefinitions>
+                                             <!-- Expanded 2-Row Layout (Linear Segmented LED Bar Mode) -->
+                                             <Grid x:Name="SegmentedBarLayout">
+                                                 <Grid.Style>
+                                                     <Style TargetType="Grid">
+                                                         <Setter Property="Visibility" Value="Collapsed"/>
+                                                         <Style.Triggers>
+                                                             <DataTrigger Binding="{Binding IsLinearBarMode}" Value="True">
+                                                                 <Setter Property="Visibility" Value="Visible"/>
+                                                             </DataTrigger>
+                                                         </Style.Triggers>
+                                                     </Style>
+                                                 </Grid.Style>
+                                                 <Grid.RowDefinitions>
+                                                     <!-- Row 0: Device Name (Left) + Percentage (Right) -->
+                                                     <RowDefinition Height="Auto"/>
+                                                     <!-- Row 1: Segmented LED Bar (Full Width Bottom) -->
+                                                     <RowDefinition Height="Auto"/>
+                                                 </Grid.RowDefinitions>
 
-                                                <!-- Row 0 -->
-                                                <Grid Grid.Row="0" Margin="0,0,0,8">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                    </Grid.ColumnDefinitions>
+                                                 <!-- Row 0 -->
+                                                 <Grid Grid.Row="0" Margin="0,0,0,8">
+                                                     <Grid.ColumnDefinitions>
+                                                         <ColumnDefinition Width="*"/>
+                                                         <ColumnDefinition Width="Auto"/>
+                                                     </Grid.ColumnDefinitions>
 
-                                                    <TextBlock Grid.Column="0" 
-                                                               Text="{Binding Name}" 
-                                                               Style="{StaticResource AccentTextHoverStyle}"
-                                                               FontSize="13.5" 
-                                                               FontWeight="SemiBold"
-                                                               TextTrimming="CharacterEllipsis" 
-                                                               ToolTip="{Binding FullTooltipText}"
-                                                               VerticalAlignment="Center"/>
+                                                     <TextBlock Grid.Column="0" 
+                                                                Text="{Binding Name}" 
+                                                                Style="{StaticResource AccentTextHoverStyle}"
+                                                                FontSize="13.5" 
+                                                                FontWeight="SemiBold"
+                                                                TextTrimming="CharacterEllipsis" 
+                                                                ToolTip="{Binding FullTooltipText}"
+                                                                VerticalAlignment="Center"/>
 
-                                                    <TextBlock Grid.Column="1" 
-                                                               Text="{Binding BatteryPercentageText}" 
-                                                               Style="{StaticResource AccentTextHoverStyle}"
-                                                               FontSize="13" 
-                                                               FontWeight="Bold" 
-                                                               VerticalAlignment="Center"
-                                                               ToolTip="{Binding BatteryTooltip}"/>
-                                                </Grid>
+                                                     <TextBlock Grid.Column="1" 
+                                                                Text="{Binding BatteryPercentageText}" 
+                                                                Style="{StaticResource AccentTextHoverStyle}"
+                                                                FontSize="13" 
+                                                                FontWeight="Bold" 
+                                                                VerticalAlignment="Center"
+                                                                ToolTip="{Binding BatteryTooltip}"/>
+                                                 </Grid>
 
-                                                <!-- Row 1: Full-Width Segmented LED Bar -->
-                                                <controls:SegmentedBarIcon Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-                                            </Grid>
+                                                 <!-- Row 1: Full-Width Segmented LED Bar -->
+                                                 <controls:SegmentedBarIcon Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                                             </Grid>
+
+                                             <!-- Single-Row Expanded Layout (Circular Ring Gauge Mode) -->
+                                             <Grid x:Name="RingGaugeLayout">
+                                                 <Grid.Style>
+                                                     <Style TargetType="Grid">
+                                                         <Setter Property="Visibility" Value="Collapsed"/>
+                                                         <Style.Triggers>
+                                                             <DataTrigger Binding="{Binding IsRingGaugeMode}" Value="True">
+                                                                 <Setter Property="Visibility" Value="Visible"/>
+                                                             </DataTrigger>
+                                                         </Style.Triggers>
+                                                     </Style>
+                                                 </Grid.Style>
+                                                 <Grid.ColumnDefinitions>
+                                                     <ColumnDefinition Width="*"/>
+                                                     <ColumnDefinition Width="Auto"/>
+                                                 </Grid.ColumnDefinitions>
+
+                                                 <!-- Left: Device Name (Vertically Centered) -->
+                                                 <TextBlock Grid.Column="0" 
+                                                            Text="{Binding Name}" 
+                                                            Style="{StaticResource AccentTextHoverStyle}"
+                                                            FontSize="13.5" 
+                                                            FontWeight="SemiBold"
+                                                            TextTrimming="CharacterEllipsis" 
+                                                            ToolTip="{Binding FullTooltipText}"
+                                                            VerticalAlignment="Center"/>
+
+                                                 <!-- Right: Circular Ring Gauge (Percent Centered Inside Ring) -->
+                                                 <controls:CircularRingIcon Grid.Column="1" VerticalAlignment="Center"/>
+                                             </Grid>
                                         </Grid>
                                     </Grid>
                                 </Border>

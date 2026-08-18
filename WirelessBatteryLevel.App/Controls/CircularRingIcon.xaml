@@ -1,0 +1,62 @@
+<UserControl x:Class="WirelessBatteryLevel.App.Controls.CircularRingIcon"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             SnapsToDevicePixels="True"
+             UseLayoutRounding="True"
+             Height="57" Width="57"
+             Cursor="Hand"
+             d:DesignHeight="57" d:DesignWidth="57">
+
+    <Grid x:Name="MainGrid" Background="Transparent" SnapsToDevicePixels="True">
+        <!-- 1. Background Circle Track (#3F3F46, 5px stroke) -->
+        <Path x:Name="RingTrackPath"
+              Stroke="#3F3F46"
+              StrokeThickness="5"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              SnapsToDevicePixels="True"/>
+
+        <!-- 2. Active Progress Ring Path (Supports Progress Arc & Rise Up along ring stroke) -->
+        <Path x:Name="RingArcPath"
+              StrokeThickness="5"
+              StrokeStartLineCap="Round"
+              StrokeEndLineCap="Round"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              SnapsToDevicePixels="True"/>
+
+        <!-- 3. Hover Brightness Overlay Arc Path for Color Mode -->
+        <Path x:Name="RingBrightHoverPath"
+              Stroke="#FFFFFF"
+              StrokeThickness="5"
+              StrokeStartLineCap="Round"
+              StrokeEndLineCap="Round"
+              Opacity="0"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              SnapsToDevicePixels="True"/>
+
+        <!-- 4. Centered Percentage Text (13pt Bold with System Accent Hover) -->
+        <TextBlock x:Name="RingPercentText"
+                   Text="{Binding BatteryPercentageText}"
+                   FontSize="13"
+                   FontWeight="Bold"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   SnapsToDevicePixels="True">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="#FFFFFF"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Border}}" Value="True">
+                            <Setter Property="Foreground" Value="{DynamicResource SystemAccentBrush}"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+    </Grid>
+</UserControl>
