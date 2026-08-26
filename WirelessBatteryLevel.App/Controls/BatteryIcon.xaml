@@ -40,19 +40,19 @@
         <!-- SVG Vector Windows 10 Native Battery Icon Container -->
         <Canvas Width="36" Height="18" HorizontalAlignment="Center" VerticalAlignment="Center" SnapsToDevicePixels="True">
             <!-- Outer Battery Outline (Position & Ratios Untouched, Stroke Changes to System Accent on Hover) -->
-            <Rectangle Canvas.Left="0.5" Canvas.Top="0.5" Width="32" Height="17"
+            <Rectangle Canvas.Left="1" Canvas.Top="2" Width="32" Height="17"
                        Style="{StaticResource BatteryOutlineHoverStyle}"
                        StrokeThickness="1"
                        Fill="Transparent"
-                       SnapsToDevicePixels="True"/>
+                       SnapsToDevicePixels="True" HorizontalAlignment="Center" VerticalAlignment="Top"/>
 
             <!-- Solid Battery Stud / Nipple Terminal on Right (Position & Ratios Untouched, Fill Changes to System Accent on Hover) -->
-            <Rectangle Canvas.Left="32" Canvas.Top="5" Width="3" Height="8"
+            <Rectangle Canvas.Left="33" Canvas.Top="7" Width="2" Height="5"
                        Style="{StaticResource BatteryStudHoverStyle}"
-                       SnapsToDevicePixels="True"/>
+                       SnapsToDevicePixels="True" HorizontalAlignment="Left" VerticalAlignment="Center"/>
 
             <!-- Inner Dynamic Fill Bar (Adjusted to 27px for Perfectly Balanced Right Gap at 100%) -->
-            <Border Canvas.Left="3" Canvas.Top="3" Height="12" CornerRadius="0" ClipToBounds="True" SnapsToDevicePixels="True">
+            <Border Canvas.Left="3" Canvas.Top="3" Height="13" CornerRadius="0" ClipToBounds="True" SnapsToDevicePixels="True">
                 <Grid Width="27">
                     <!-- Base Fill Bar (Accent on hover in Monochrome Mode, Dynamic Color in Color Mode) -->
                     <Rectangle HorizontalAlignment="Left"
@@ -97,10 +97,10 @@
                                 <Style.Triggers>
                                     <!-- In Color Mode: Brighten existing dynamic color on hover -->
                                     <MultiDataTrigger>
-                                         <MultiDataTrigger.Conditions>
-                                             <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Border}}" Value="True"/>
-                                             <Condition Binding="{Binding IsMonochromeMode}" Value="False"/>
-                                         </MultiDataTrigger.Conditions>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Border}}" Value="True"/>
+                                            <Condition Binding="{Binding IsMonochromeMode}" Value="False"/>
+                                        </MultiDataTrigger.Conditions>
                                         <Setter Property="Opacity" Value="0.35"/>
                                     </MultiDataTrigger>
                                 </Style.Triggers>

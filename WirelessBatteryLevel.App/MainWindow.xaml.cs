@@ -124,6 +124,12 @@ namespace WirelessBatteryLevel.App
                 return;
             }
 
+            // Trigger instant refresh on opening context menu
+            if (_viewModel.RefreshCommand.CanExecute(null))
+            {
+                _viewModel.RefreshCommand.Execute(null);
+            }
+
             if (sender is System.Windows.Controls.Button settingsBtn)
             {
                 var contextMenu = CreateSettingsContextMenu(includeExitItem: false);
@@ -144,6 +150,12 @@ namespace WirelessBatteryLevel.App
                 return;
             }
 
+            // Trigger instant refresh on opening context menu
+            if (_viewModel.RefreshCommand.CanExecute(null))
+            {
+                _viewModel.RefreshCommand.Execute(null);
+            }
+
             if (sender is FrameworkElement cardElement && cardElement.DataContext is DeviceItemViewModel vm)
             {
                 var contextMenu = CreateDeviceCardContextMenu(vm);
@@ -162,10 +174,10 @@ namespace WirelessBatteryLevel.App
                 StaysOpen = false
             };
 
-            // 5-second Auto-close Timer for Menu
+            // 10-second Auto-close Timer for Menu
             var menuAutoCloseTimer = new DispatcherTimer
             {
-                Interval = TimeSpan.FromSeconds(5)
+                Interval = TimeSpan.FromSeconds(10)
             };
             menuAutoCloseTimer.Tick += (s, e) =>
             {
@@ -216,7 +228,21 @@ namespace WirelessBatteryLevel.App
                 }
             };
 
-            // Fancy Battery Display Style Options Per-Device Card
+            // 1. Pin to Tray Option (Default OFF)
+            var pinItem = new MenuItem
+            {
+                Header = "Pin Devices to System Tray",
+                IsCheckable = true,
+                IsChecked = AppSettingsService.Instance.IsPinToTrayEnabled,
+                Style = (Style)FindResource("Win10MenuItemStyle")
+            };
+            pinItem.Click += (s, e) =>
+            {
+                AppSettingsService.Instance.IsPinToTrayEnabled = !AppSettingsService.Instance.IsPinToTrayEnabled;
+                contextMenu.IsOpen = false;
+            };
+
+            // 2. Fancy Battery Display Style Options Per-Device Card
             var classicItem = new MenuItem
             {
                 Header = "Classic Battery (Default)",
@@ -256,6 +282,8 @@ namespace WirelessBatteryLevel.App
                 contextMenu.IsOpen = false;
             };
 
+            contextMenu.Items.Add(pinItem);
+            contextMenu.Items.Add(new Separator());
             contextMenu.Items.Add(classicItem);
             contextMenu.Items.Add(barItem);
             contextMenu.Items.Add(ringItem);
@@ -271,10 +299,10 @@ namespace WirelessBatteryLevel.App
                 StaysOpen = false
             };
 
-            // 5-second Auto-close Timer for Menu (Closes menu automatically after 5s idle)
+            // 10-second Auto-close Timer for Menu
             var menuAutoCloseTimer = new DispatcherTimer
             {
-                Interval = TimeSpan.FromSeconds(5)
+                Interval = TimeSpan.FromSeconds(10)
             };
             menuAutoCloseTimer.Tick += (s, e) =>
             {
@@ -329,7 +357,21 @@ namespace WirelessBatteryLevel.App
                 }
             };
 
-            // 1. Window Auto-Close Time Sub-Menu
+            // 1. Pin to Tray Mode Option (Default OFF)
+            var pinToTrayItem = new MenuItem
+            {
+                Header = "Pin Devices to System Tray",
+                IsCheckable = true,
+                IsChecked = AppSettingsService.Instance.IsPinToTrayEnabled,
+                Style = (Style)FindResource("Win10MenuItemStyle")
+            };
+            pinToTrayItem.Click += (s, e) =>
+            {
+                AppSettingsService.Instance.IsPinToTrayEnabled = !AppSettingsService.Instance.IsPinToTrayEnabled;
+                contextMenu.IsOpen = false;
+            };
+
+            // 2. Window Auto-Close Time Sub-Menu
             var autoCloseMenu = new MenuItem
             {
                 Header = "Window Auto-Close Time",
@@ -361,7 +403,7 @@ namespace WirelessBatteryLevel.App
                 autoCloseMenu.Items.Add(item);
             }
 
-            // 2. Auto-Refresh Interval Sub-Menu
+            // 3. Auto-Refresh Interval Sub-Menu
             var refreshMenu = new MenuItem
             {
                 Header = "Auto-Refresh Interval",
@@ -393,7 +435,7 @@ namespace WirelessBatteryLevel.App
                 refreshMenu.Items.Add(item);
             }
 
-            // 3. Battery Color Display Mode Sub-Menu
+            // 4. Battery Color Display Mode Sub-Menu
             var batteryColorMenu = new MenuItem
             {
                 Header = "Battery Color Display Mode",
@@ -428,6 +470,8 @@ namespace WirelessBatteryLevel.App
             batteryColorMenu.Items.Add(defaultWhiteItem);
             batteryColorMenu.Items.Add(dynamicColorItem);
 
+            contextMenu.Items.Add(pinToTrayItem);
+            contextMenu.Items.Add(new Separator());
             contextMenu.Items.Add(autoCloseMenu);
             contextMenu.Items.Add(refreshMenu);
             contextMenu.Items.Add(batteryColorMenu);
@@ -463,6 +507,12 @@ namespace WirelessBatteryLevel.App
                 Show();
                 Activate();
                 ResetAutoCloseTimer();
+
+                // Instantly run refresh when opening flyout window
+                if (_viewModel.RefreshCommand.CanExecute(null))
+                {
+                    _viewModel.RefreshCommand.Execute(null);
+                }
             }
         }
 

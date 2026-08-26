@@ -28,7 +28,7 @@
             </Setter>
         </Style>
 
-        <!-- Windows 10 Native Separator Style (Overrides MenuItem.SeparatorStyleKey to eliminate WPF's 30px Icon Gutter) -->
+        <!-- Windows 10 Native Separator Style (Spans menu width with subtle 6px end margins) -->
         <Style x:Key="Win10SeparatorStyle" TargetType="Separator">
             <Setter Property="Height" Value="1"/>
             <Setter Property="Margin" Value="6,4,6,4"/>
@@ -91,7 +91,7 @@
             <Setter Property="Background" Value="#2D2D30"/>
             <Setter Property="BorderBrush" Value="#A1A1AA"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="2"/>
+            <Setter Property="Padding" Value="0,2,0,2"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Foreground" Value="#FFFFFF"/>
@@ -124,7 +124,7 @@
             </Setter>
         </Style>
 
-        <!-- Windows 10 MenuItem Style (Dynamic Checkmark Column 18px / 0px, Wider Obtuse ">" Chevron) -->
+        <!-- Windows 10 MenuItem Style (Fixed 22px Icon/Checkmark Column so text never shifts, Full-Width Separators) -->
         <Style x:Key="Win10MenuItemStyle" TargetType="MenuItem">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="#FFFFFF"/>
@@ -137,8 +137,8 @@
                         <Border x:Name="Bd" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" CornerRadius="0" SnapsToDevicePixels="True">
                             <Grid TextElement.Foreground="#FFFFFF">
                                 <Grid.ColumnDefinitions>
-                                    <!-- Dynamic Checkmark Column (18px when IsCheckable=True, 0px when IsCheckable=False) -->
-                                    <ColumnDefinition x:Name="IconColumn" Width="18"/>
+                                    <!-- Fixed Icon/Checkmark Column (22px for ALL menu items so header text never shifts) -->
+                                    <ColumnDefinition x:Name="IconColumn" Width="22"/>
                                     <!-- Header Text Column -->
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto" SharedSizeGroup="Shortcut"/>
@@ -146,7 +146,8 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
 
-                                <!-- Dedicated Checkmark Glyph -->
+                                <!-- Dedicated Icon or Checkmark Container -->
+                                <ContentPresenter x:Name="IconPresenter" Grid.Column="0" ContentSource="Icon" HorizontalAlignment="Center" VerticalAlignment="Center" SnapsToDevicePixels="True"/>
                                 <TextBlock x:Name="Glyph" Grid.Column="0" Text="✓" Foreground="{DynamicResource SystemAccentBrush}" FontWeight="Bold" FontSize="11" Visibility="Hidden" VerticalAlignment="Center" HorizontalAlignment="Center"/>
 
                                 <!-- Header Content -->
@@ -157,19 +158,13 @@
 
                                 <!-- Popup for SubMenu -->
                                 <Popup x:Name="Popup" Placement="Right" HorizontalOffset="1" IsOpen="{TemplateBinding IsSubmenuOpen}" AllowsTransparency="True" Focusable="False" PopupAnimation="Fade">
-                                    <Border Background="#2D2D30" BorderBrush="#A1A1AA" BorderThickness="1" Padding="3" CornerRadius="0" SnapsToDevicePixels="True">
+                                    <Border Background="#2D2D30" BorderBrush="#A1A1AA" BorderThickness="1" Padding="0,3,0,3" CornerRadius="0" SnapsToDevicePixels="True">
                                         <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle"/>
                                     </Border>
                                 </Popup>
                             </Grid>
                         </Border>
                         <ControlTemplate.Triggers>
-                            <!-- Hide Icon Column for Non-Checkable Submenus & Actions -->
-                            <Trigger Property="IsCheckable" Value="False">
-                                <Setter TargetName="IconColumn" Property="Width" Value="0"/>
-                                <Setter TargetName="Glyph" Property="Visibility" Value="Collapsed"/>
-                            </Trigger>
-
                             <!-- Checkmark Visibility Trigger -->
                             <Trigger Property="IsChecked" Value="True">
                                 <Setter TargetName="Glyph" Property="Visibility" Value="Visible"/>

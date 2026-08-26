@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,19 +20,26 @@ namespace WirelessBatteryLevel.Infrastructure.Device
             return _devices.Values.ToList();
         }
 
-        public void Update(DeviceStatus status)
+        public bool Update(DeviceStatus status, bool forceBatteryUpdate = false)
         {
             var key = GetKey(status);
-
             _lastSeen[key] = DateTime.Now;
 
             if (_devices.TryGetValue(key, out var existing))
             {
-                Merge(existing, status);
-                return;
+                bool connectionChanged = existing.Device.IsConnected != status.Device.IsConnected;
+                Merge(existing, status, forceBatteryUpdate);
+                return connectionChanged;
             }
 
             _devices[key] = status;
+            return true;
+        }
+
+        public void Clear()
+        {
+            _devices.Clear();
+            _lastSeen.Clear();
         }
 
         public bool IsStale(DeviceStatus status, TimeSpan threshold)
@@ -61,7 +68,8 @@ namespace WirelessBatteryLevel.Infrastructure.Device
 
         private static void Merge(
             DeviceStatus target,
-            DeviceStatus source)
+            DeviceStatus source,
+            bool forceBatteryUpdate = false)
         {
             target.Device.Name =
                 source.Device.Name;
@@ -74,8 +82,11 @@ namespace WirelessBatteryLevel.Infrastructure.Device
 
             if (source.Battery is not null)
             {
-                target.Battery =
-                    source.Battery;
+                target.Battery = source.Battery;
+            }
+            else if (!source.Device.IsConnected)
+            {
+                target.Battery = null;
             }
         }
     }

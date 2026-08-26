@@ -24,11 +24,25 @@ namespace WirelessBatteryLevel.App.Services
         private int _refreshIntervalSeconds = 60;
         private BatteryColorMode _batteryColorMode = BatteryColorMode.DynamicColors;
         private BatteryDisplayStyle _batteryDisplayStyle = BatteryDisplayStyle.ClassicBattery;
+        private bool _isPinToTrayEnabled = false;
 
         public event EventHandler? SettingsChanged;
 
         private AppSettingsService()
         {
+        }
+
+        public bool IsPinToTrayEnabled
+        {
+            get => _isPinToTrayEnabled;
+            set
+            {
+                if (_isPinToTrayEnabled != value)
+                {
+                    _isPinToTrayEnabled = value;
+                    OnSettingsChanged();
+                }
+            }
         }
 
         public int AutoCloseSeconds

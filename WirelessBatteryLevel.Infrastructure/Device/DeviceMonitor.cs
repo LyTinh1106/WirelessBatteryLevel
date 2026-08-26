@@ -33,27 +33,20 @@ namespace WirelessBatteryLevel.Infrastructure.Device
             _monitorCts = new CancellationTokenSource();
             var cancellationToken = _monitorCts.Token;
 
-            try
+            // Bước 0: Phát dữ liệu từ Cache lên UI lập tức nếu có
+            var cachedDevices = _stateCache.GetAll();
+            if (cachedDevices.Count > 0)
             {
-                // Bước 0: Phát dữ liệu từ Cache lên UI lập tức nếu có
-                var cachedDevices = _stateCache.GetAll();
-                if (cachedDevices.Count > 0)
-                {
-                    DevicesUpdated?.Invoke(this, cachedDevices);
-                }
-
-                // Thực hiện nạp 2 giai đoạn (Quét thiết bị lập tức -> Nạp pin dưới nền)
-                await RefreshProgressiveAsync(cancellationToken);
-
-                using var timer = new PeriodicTimer(interval);
-                while (await timer.WaitForNextTickAsync(cancellationToken))
-                {
-                    await RefreshProgressiveAsync(cancellationToken);
-                }
+                DevicesUpdated?.Invoke(this, cachedDevices);
             }
-            catch (OperationCanceledException)
-            {
-            }
+
+            // Chạy 2 Layer song song:
+            // Layer 1: Connection Monitor Loop (100ms) - Kiểm tra nhanh IsConnected
+            // Layer 2: Battery Polling Loop (interval) - Truy vấn dung lượng pin
+            _ = Task.Run(() => FastConnectionMonitorLoopAsync(cancellationToken), cancellationToken);
+            _ = Task.Run(() => BatteryPollingLoopAsync(interval, cancellationToken), cancellationToken);
+
+            await Task.CompletedTask;
         }
 
         public void Stop()
@@ -65,32 +58,80 @@ namespace WirelessBatteryLevel.Infrastructure.Device
 
         public async Task<IReadOnlyList<DeviceStatus>> ForceRefreshAsync(CancellationToken cancellationToken = default)
         {
-            return await RefreshProgressiveAsync(cancellationToken);
+            return await RefreshProgressiveAsync(forceBatteryUpdate: true, cancellationToken: cancellationToken);
         }
 
-        private async Task<IReadOnlyList<DeviceStatus>> RefreshProgressiveAsync(CancellationToken cancellationToken)
+        private async Task FastConnectionMonitorLoopAsync(CancellationToken cancellationToken)
         {
-            // Giai đoạn 1: Quét nhanh danh sách tất cả các thiết bị đã Paired/Connected (< 100ms)
+            using var fastTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(100));
+
+            try
+            {
+                while (!cancellationToken.IsCancellationRequested && await fastTimer.WaitForNextTickAsync(cancellationToken))
+                {
+                    var fastStatuses = await _deviceManager.FastDiscoverAsync(cancellationToken);
+                    bool hasChange = false;
+
+                    foreach (var status in fastStatuses)
+                    {
+                        bool changed = _stateCache.Update(status, forceBatteryUpdate: false);
+                        if (changed)
+                        {
+                            hasChange = true;
+                        }
+                    }
+
+                    if (hasChange)
+                    {
+                        var currentAll = _stateCache.GetAll();
+                        DevicesUpdated?.Invoke(this, currentAll);
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+            }
+        }
+
+        private async Task BatteryPollingLoopAsync(TimeSpan interval, CancellationToken cancellationToken)
+        {
+            try
+            {
+                // Thực hiện quét ban đầu
+                await RefreshProgressiveAsync(forceBatteryUpdate: false, cancellationToken: cancellationToken);
+
+                using var timer = new PeriodicTimer(interval);
+                while (!cancellationToken.IsCancellationRequested && await timer.WaitForNextTickAsync(cancellationToken))
+                {
+                    await RefreshProgressiveAsync(forceBatteryUpdate: false, cancellationToken: cancellationToken);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+            }
+        }
+
+        private async Task<IReadOnlyList<DeviceStatus>> RefreshProgressiveAsync(bool forceBatteryUpdate, CancellationToken cancellationToken)
+        {
+            // Layer 1: Quét nhanh danh sách tất cả các thiết bị đã Paired/Connected
             var fastStatuses = await _deviceManager.FastDiscoverAsync(cancellationToken);
 
             foreach (var status in fastStatuses)
             {
-                _stateCache.Update(status);
+                _stateCache.Update(status, forceBatteryUpdate);
             }
 
-            // Hiển thị danh sách thiết bị lên UI NGAY LẬP TỨC
             var currentAll = _stateCache.GetAll();
             DevicesUpdated?.Invoke(this, currentAll);
 
-            // Giai đoạn 2: Nạp dữ liệu dung lượng pin dưới nền bất đồng bộ
+            // Layer 2: Nạp dữ liệu dung lượng pin dưới nền bất đồng bộ
             var fullStatuses = await _deviceManager.RefreshAsync(cancellationToken);
 
             foreach (var status in fullStatuses)
             {
-                _stateCache.Update(status);
+                _stateCache.Update(status, forceBatteryUpdate: true);
             }
 
-            // Cập nhật lại UI sau khi đã trích xuất xong thông số pin
             var finalAll = _stateCache.GetAll();
             DevicesUpdated?.Invoke(this, finalAll);
 
