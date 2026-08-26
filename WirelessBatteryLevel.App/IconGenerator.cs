@@ -15,37 +15,13 @@ namespace WirelessBatteryLevel.App
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         private static extern bool DestroyIcon(IntPtr handle);
 
-        private static Icon? _cachedIcon;
-        private static ImageSource? _cachedWpfIcon;
-
-        public static string EnsureIconCreated()
-        {
-            var iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "WBL.ico");
-
-            try
-            {
-                using var iconStream = GenerateBatteryIcon();
-                using var fileStream = new FileStream(iconPath, FileMode.Create, FileAccess.Write);
-                iconStream.CopyTo(fileStream);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[IconGenerator] Exception while creating icon: {ex.Message}");
-            }
-
-            return iconPath;
-        }
-
         public static Icon CreateZtkIconInstance()
         {
-            if (_cachedIcon != null)
-                return _cachedIcon;
-
             try
             {
                 using var ms = GenerateBatteryIcon();
-                _cachedIcon = new Icon(ms);
-                return _cachedIcon;
+                using var tempIcon = new Icon(ms);
+                return (Icon)tempIcon.Clone();
             }
             catch
             {
@@ -55,17 +31,13 @@ namespace WirelessBatteryLevel.App
 
         public static ImageSource GetWpfIconSource()
         {
-            if (_cachedWpfIcon != null)
-                return _cachedWpfIcon;
-
-            var icon = CreateZtkIconInstance();
+            using var icon = CreateZtkIconInstance();
             try
             {
-                _cachedWpfIcon = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(
+                return System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(
                     icon.Handle,
                     System.Windows.Int32Rect.Empty,
                     BitmapSizeOptions.FromEmptyOptions());
-                return _cachedWpfIcon;
             }
             catch
             {
@@ -206,14 +178,14 @@ namespace WirelessBatteryLevel.App
                     LineJoin = LineJoin.Miter,
                     MiterLimit = 10
                 };
-                using var bluetoothPen = new System.Drawing.Pen(System.Drawing.Color.FromArgb(255, 31, 31, 31), 20)
+                using var bluetoothPen = new System.Drawing.Pen(System.Drawing.Color.White, 20)
                 {
                     StartCap = LineCap.Round,
                     EndCap = LineCap.Round,
                     LineJoin = LineJoin.Round
                 };
 
-                // Sleek & Tall Vertical Battery Layout (Monochrome White with 100% Fill & Bluetooth Overlay)
+                // Sleek & Taller Vertical Battery Layout (Hollow 0% Fill Outline with White Bluetooth Overlay)
                 // 1. Top Battery Terminal Stud (Solid White Rectangle Centered on Top)
                 int studWidth = 48;
                 int studHeight = 16;
@@ -222,25 +194,19 @@ namespace WirelessBatteryLevel.App
                 g.FillRectangle(whiteBrush, studX, studY, studWidth, studHeight);
 
                 // 2. Sharp Outer Body Outline (14px White Stroke, 0-Radius Corners)
-                int bodyWidth = 124;
-                int bodyHeight = 216;
-                int bodyX = (size - bodyWidth) / 2; // 66
-                int bodyY = 26;
+                int bodyWidth = 128;
+                int bodyHeight = 218;
+                int bodyX = (size - bodyWidth) / 2; // 64
+                int bodyY = 25;
                 g.DrawRectangle(whitePen, bodyX + 7, bodyY + 7, bodyWidth - 14, bodyHeight - 14);
 
-                // 3. Inner Battery Fill Level (100% Full Vertical Fill - Solid White Rectangle)
-                int innerX = bodyX + 20;
-                int innerY = bodyY + 20;
-                int innerWidth = bodyWidth - 40;
-                int innerHeight = bodyHeight - 40;
+                // 3. Inner Battery Fill: 0% Fill (Hollow / Transparent interior)
 
-                g.FillRectangle(whiteBrush, innerX, innerY, innerWidth, innerHeight);
-
-                // 4. Bluetooth Emblem Vector Overlay (Bold & Large Prominent Size inside 100% White Battery Fill)
+                // 4. Bluetooth Emblem Vector Overlay (Drawn in Solid WHITE inside hollow battery outline)
                 float cx = bodyX + (bodyWidth / 2f);   // 128 (Exact Center X)
                 float cy = bodyY + (bodyHeight / 2f);  // 134 (Exact Center Y)
-                float R = 64f;                         // Large Height of Bluetooth Symbol
-                float dx = 28f;                        // Large Width of Bluetooth Symbol
+                float R = 72f;                         // Large Height of Bluetooth Symbol (144px total height)
+                float dx = 30f;                        // Large Width of Bluetooth Symbol (60px total width)
 
                 PointF topStem = new PointF(cx, cy - R);
                 PointF botStem = new PointF(cx, cy + R);
@@ -263,30 +229,65 @@ namespace WirelessBatteryLevel.App
             return ms;
         }
 
-        private static void SaveAsIco(Bitmap bmp, Stream outputStream)
+        private static void SaveAsIco(Bitmap masterBmp, Stream outputStream)
         {
-            using var pngStream = new MemoryStream();
-            bmp.Save(pngStream, ImageFormat.Png);
-            byte[] pngBytes = pngStream.ToArray();
+            int[] sizes = new[] { 256, 48, 32, 16 };
+            var pngBytesList = new System.Collections.Generic.List<byte[]>();
+
+            foreach (var s in sizes)
+            {
+                if (s == masterBmp.Width && s == masterBmp.Height)
+                {
+                    using var ms = new MemoryStream();
+                    masterBmp.Save(ms, ImageFormat.Png);
+                    pngBytesList.Add(ms.ToArray());
+                }
+                else
+                {
+                    using var resized = new Bitmap(s, s, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                    using (var g = Graphics.FromImage(resized))
+                    {
+                        g.SmoothingMode = SmoothingMode.HighQuality;
+                        g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                        g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                        g.DrawImage(masterBmp, 0, 0, s, s);
+                    }
+                    using var ms = new MemoryStream();
+                    resized.Save(ms, ImageFormat.Png);
+                    pngBytesList.Add(ms.ToArray());
+                }
+            }
 
             using var writer = new BinaryWriter(outputStream, Encoding.UTF8, leaveOpen: true);
             writer.Write((ushort)0); // Reserved
             writer.Write((ushort)1); // Type = ICO
-            writer.Write((ushort)1); // Count
+            writer.Write((ushort)sizes.Length); // Count
 
-            int width = bmp.Width >= 256 ? 0 : bmp.Width;
-            int height = bmp.Height >= 256 ? 0 : bmp.Height;
+            uint currentOffset = (uint)(6 + (16 * sizes.Length));
 
-            writer.Write((byte)width);
-            writer.Write((byte)height);
-            writer.Write((byte)0);
-            writer.Write((byte)0);
-            writer.Write((ushort)1);  // Color Planes
-            writer.Write((ushort)32); // 32 bpp
-            writer.Write((uint)pngBytes.Length);
-            writer.Write((uint)22);   // Offset 6 + 16 = 22
+            for (int i = 0; i < sizes.Length; i++)
+            {
+                int s = sizes[i];
+                byte w = (byte)(s >= 256 ? 0 : s);
+                byte h = (byte)(s >= 256 ? 0 : s);
 
-            writer.Write(pngBytes);
+                writer.Write(w);
+                writer.Write(h);
+                writer.Write((byte)0);
+                writer.Write((byte)0);
+                writer.Write((ushort)1);  // Planes
+                writer.Write((ushort)32); // BPP
+                writer.Write((uint)pngBytesList[i].Length);
+                writer.Write(currentOffset);
+
+                currentOffset += (uint)pngBytesList[i].Length;
+            }
+
+            for (int i = 0; i < sizes.Length; i++)
+            {
+                writer.Write(pngBytesList[i]);
+            }
+
             writer.Flush();
         }
     }
