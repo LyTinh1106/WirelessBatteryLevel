@@ -36,7 +36,7 @@ namespace WirelessBatteryLevel.App.ViewModels
             get
             {
                 var ver = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-                return ver != null ? $"v{ver.Major}.{ver.Minor}.{ver.Build}" : "v1.2.2";
+                return ver != null ? $"v{ver.Major}.{ver.Minor}.{ver.Build}" : "v1.2.3";
             }
         }
 
