@@ -150,11 +150,15 @@ namespace WirelessBatteryLevel.App
                 // 2. Handle Pinned Device NotifyIcons (Optional feature, Default = OFF)
                 if (!AppSettingsService.Instance.IsPinToTrayEnabled)
                 {
+                    _notifyIcon.Visible = true;
                     ClearPinnedIcons();
                     return;
                 }
 
                 int targetCount = Math.Min(3, connectedDevices.Count);
+
+                // When pinned device icons are shown, hide main app icon; otherwise fallback to main icon
+                _notifyIcon.Visible = targetCount == 0;
 
                 // Create missing pinned icons
                 while (_pinnedDeviceIcons.Count < targetCount)
