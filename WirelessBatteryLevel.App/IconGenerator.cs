@@ -206,7 +206,7 @@ namespace WirelessBatteryLevel.App
                     LineJoin = LineJoin.Miter,
                     MiterLimit = 10
                 };
-                using var bluetoothPen = new System.Drawing.Pen(System.Drawing.Color.FromArgb(255, 31, 31, 31), 16)
+                using var bluetoothPen = new System.Drawing.Pen(System.Drawing.Color.FromArgb(255, 31, 31, 31), 20)
                 {
                     StartCap = LineCap.Round,
                     EndCap = LineCap.Round,
@@ -236,11 +236,11 @@ namespace WirelessBatteryLevel.App
 
                 g.FillRectangle(whiteBrush, innerX, innerY, innerWidth, innerHeight);
 
-                // 4. Bluetooth Emblem Vector Overlay (Drawn in Dark Color #1F1F1F inside 100% White Battery Fill)
+                // 4. Bluetooth Emblem Vector Overlay (Bold & Large Prominent Size inside 100% White Battery Fill)
                 float cx = bodyX + (bodyWidth / 2f);   // 128 (Exact Center X)
                 float cy = bodyY + (bodyHeight / 2f);  // 134 (Exact Center Y)
-                float R = 44f;                         // Half Height of Bluetooth Symbol
-                float dx = 22f;                        // Half Width of Bluetooth Symbol
+                float R = 64f;                         // Large Height of Bluetooth Symbol
+                float dx = 28f;                        // Large Width of Bluetooth Symbol
 
                 PointF topStem = new PointF(cx, cy - R);
                 PointF botStem = new PointF(cx, cy + R);
