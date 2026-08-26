@@ -133,8 +133,6 @@ namespace WirelessBatteryLevel.App.ViewModels
             }
 
             LastUpdatedText = $"Updated at: {DateTime.Now:HH:mm:ss}";
-
-            MemoryCleaner.TrimWorkingSet();
         }
 
         private void ExitApp()

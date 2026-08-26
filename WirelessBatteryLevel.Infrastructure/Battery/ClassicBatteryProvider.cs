@@ -99,8 +99,37 @@ namespace WirelessBatteryLevel.Infrastructure.Battery
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
+                // 1. Direct targeted lookup by Device ID if available for this device kind
+                if (!string.IsNullOrWhiteSpace(device.Id))
+                {
+                    try
+                    {
+                        var singleDevInfo = await DeviceInformation.CreateFromIdAsync(device.Id, requestedProperties, kind);
+                        if (singleDevInfo is not null && IsDeviceMatch(singleDevInfo, device))
+                        {
+                            if (TryExtractBatteryLevel(singleDevInfo, out var batteryLevel))
+                            {
+                                return new BatteryInfo
+                                {
+                                    Level = batteryLevel,
+                                    IsAvailable = true,
+                                    Source = $"ClassicBluetooth-{sourceLabel}",
+                                    LastUpdated = DateTime.Now
+                                };
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        // Ignore if CreateFromIdAsync fails for mismatched kind
+                    }
+                }
+
+                // 2. Targeted AQS filter instead of scanning all system devices ("")
+                string aqsFilter = BuildAqsFilter(device);
+
                 var devices = await DeviceInformation.FindAllAsync(
-                    "",
+                    aqsFilter,
                     requestedProperties,
                     kind);
 
@@ -115,10 +144,6 @@ namespace WirelessBatteryLevel.Infrastructure.Battery
 
                     if (TryExtractBatteryLevel(devInfo, out var batteryLevel))
                     {
-                        //Debug.WriteLine(
-                        //    $"[ClassicBatteryProvider] Đã lấy pin thành công từ " +
-                        //    $"{sourceLabel} cho {device.Name}: {batteryLevel}%");
-
                         return new BatteryInfo
                         {
                             Level = batteryLevel,
@@ -137,6 +162,19 @@ namespace WirelessBatteryLevel.Infrastructure.Battery
             }
 
             return null;
+        }
+
+        private static string BuildAqsFilter(WirelessDevice device)
+        {
+            if (!string.IsNullOrWhiteSpace(device.Address))
+            {
+                return $"System.Devices.Aep.DeviceAddress:=\"{device.Address}\"";
+            }
+            if (!string.IsNullOrWhiteSpace(device.Name))
+            {
+                return $"System.ItemNameDisplay:=\"{device.Name}\"";
+            }
+            return "";
         }
 
         private static bool TryExtractBatteryLevel(
