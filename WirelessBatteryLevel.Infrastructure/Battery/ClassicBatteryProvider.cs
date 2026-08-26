@@ -49,35 +49,17 @@ namespace WirelessBatteryLevel.Infrastructure.Battery
             };
 
             // 1. Quét theo AssociationEndpoint (AEP - Nút Bluetooth chính)
-            var aepBattery = await QueryBatteryByKindAsync(
-                device,
-                DeviceInformationKind.AssociationEndpoint,
-                requestedProperties,
-                "AEP",
-                cancellationToken);
-
+            var (aepBattery, containerId) = await QueryAepBatteryAsync(device, requestedProperties, cancellationToken);
             if (aepBattery is not null)
                 return aepBattery;
 
             // 2. Quét theo DeviceContainer (Nút Container chứa thiết bị trong Windows Settings)
-            var containerBattery = await QueryBatteryByKindAsync(
-                device,
-                DeviceInformationKind.DeviceContainer,
-                requestedProperties,
-                "DeviceContainer",
-                cancellationToken);
-
+            var containerBattery = await QueryContainerBatteryAsync(device, containerId, requestedProperties, cancellationToken);
             if (containerBattery is not null)
                 return containerBattery;
 
             // 3. Quét theo Device (Nút thiết bị hệ thống PnP Node)
-            var deviceKindBattery = await QueryBatteryByKindAsync(
-                device,
-                DeviceInformationKind.Device,
-                requestedProperties,
-                "DeviceNode",
-                cancellationToken);
-
+            var deviceKindBattery = await QueryDeviceNodeBatteryAsync(device, containerId, requestedProperties, cancellationToken);
             if (deviceKindBattery is not null)
                 return deviceKindBattery;
 
@@ -88,67 +70,150 @@ namespace WirelessBatteryLevel.Infrastructure.Battery
             return null;
         }
 
-        private async Task<BatteryInfo?> QueryBatteryByKindAsync(
+        private async Task<(BatteryInfo? Battery, Guid? ContainerId)> QueryAepBatteryAsync(
             WirelessDevice device,
-            DeviceInformationKind kind,
             string[] requestedProperties,
-            string sourceLabel,
             CancellationToken cancellationToken)
         {
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                // 1. Direct targeted lookup by Device ID if available for this device kind
+                // 1. Direct targeted lookup by Device ID (AEP ID)
                 if (!string.IsNullOrWhiteSpace(device.Id))
                 {
                     try
                     {
-                        var singleDevInfo = await DeviceInformation.CreateFromIdAsync(device.Id, requestedProperties, kind);
-                        if (singleDevInfo is not null && IsDeviceMatch(singleDevInfo, device))
+                        var singleDevInfo = await DeviceInformation.CreateFromIdAsync(
+                            device.Id, requestedProperties, DeviceInformationKind.AssociationEndpoint);
+                        if (singleDevInfo is not null)
                         {
+                            var cid = ExtractContainerId(singleDevInfo);
                             if (TryExtractBatteryLevel(singleDevInfo, out var batteryLevel))
                             {
-                                return new BatteryInfo
+                                return (new BatteryInfo
                                 {
                                     Level = batteryLevel,
                                     IsAvailable = true,
-                                    Source = $"ClassicBluetooth-{sourceLabel}",
+                                    Source = "ClassicBluetooth-AEP",
                                     LastUpdated = DateTime.Now
-                                };
+                                }, cid);
                             }
+                            return (null, cid);
                         }
                     }
                     catch
                     {
-                        // Ignore if CreateFromIdAsync fails for mismatched kind
                     }
                 }
 
-                // 2. Targeted AQS filter instead of scanning all system devices ("")
-                string aqsFilter = BuildAqsFilter(device);
-
+                // 2. Targeted AQS query by MAC / Name
+                string aqsFilter = BuildAepAqsFilter(device);
                 var devices = await DeviceInformation.FindAllAsync(
-                    aqsFilter,
-                    requestedProperties,
-                    kind);
+                    aqsFilter, requestedProperties, DeviceInformationKind.AssociationEndpoint);
 
                 cancellationToken.ThrowIfCancellationRequested();
 
                 foreach (var devInfo in devices)
                 {
+                    if (IsDeviceMatch(devInfo, device))
+                    {
+                        var cid = ExtractContainerId(devInfo);
+                        if (TryExtractBatteryLevel(devInfo, out var batteryLevel))
+                        {
+                            return (new BatteryInfo
+                            {
+                                Level = batteryLevel,
+                                IsAvailable = true,
+                                Source = "ClassicBluetooth-AEP",
+                                LastUpdated = DateTime.Now
+                            }, cid);
+                        }
+                        return (null, cid);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[ClassicBatteryProvider] Query AEP error for {device.Name}: {ex.Message}");
+            }
+
+            return (null, null);
+        }
+
+        private async Task<BatteryInfo?> QueryContainerBatteryAsync(
+            WirelessDevice device,
+            Guid? containerId,
+            string[] requestedProperties,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                // 1. Direct lookup by ContainerId GUID if available
+                if (containerId.HasValue && containerId.Value != Guid.Empty)
+                {
+                    try
+                    {
+                        var containerIdStr = $"{{{containerId.Value}}}";
+                        var singleDevInfo = await DeviceInformation.CreateFromIdAsync(
+                            containerIdStr, requestedProperties, DeviceInformationKind.DeviceContainer);
+                        if (singleDevInfo is not null && TryExtractBatteryLevel(singleDevInfo, out var batteryLevel))
+                        {
+                            return new BatteryInfo
+                            {
+                                Level = batteryLevel,
+                                IsAvailable = true,
+                                Source = "ClassicBluetooth-DeviceContainer",
+                                LastUpdated = DateTime.Now
+                            };
+                        }
+                    }
+                    catch
+                    {
+                    }
+                }
+
+                // 2. Targeted AQS query by ContainerId or Name
+                string aqsFilter = BuildContainerAqsFilter(device, containerId);
+                if (!string.IsNullOrEmpty(aqsFilter))
+                {
+                    var devices = await DeviceInformation.FindAllAsync(
+                        aqsFilter, requestedProperties, DeviceInformationKind.DeviceContainer);
+
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    if (!IsDeviceMatch(devInfo, device))
-                        continue;
+                    foreach (var devInfo in devices)
+                    {
+                        if (IsDeviceMatch(devInfo, device))
+                        {
+                            if (TryExtractBatteryLevel(devInfo, out var batteryLevel))
+                            {
+                                return new BatteryInfo
+                                {
+                                    Level = batteryLevel,
+                                    IsAvailable = true,
+                                    Source = "ClassicBluetooth-DeviceContainer",
+                                    LastUpdated = DateTime.Now
+                                };
+                            }
+                        }
+                    }
+                }
 
-                    if (TryExtractBatteryLevel(devInfo, out var batteryLevel))
+                // 3. Fallback: Full scan if targeted query yielded no results
+                var fallbackDevices = await DeviceInformation.FindAllAsync(
+                    "", requestedProperties, DeviceInformationKind.DeviceContainer);
+                foreach (var devInfo in fallbackDevices)
+                {
+                    if (IsDeviceMatch(devInfo, device) && TryExtractBatteryLevel(devInfo, out var batteryLevel))
                     {
                         return new BatteryInfo
                         {
                             Level = batteryLevel,
                             IsAvailable = true,
-                            Source = $"ClassicBluetooth-{sourceLabel}",
+                            Source = "ClassicBluetooth-DeviceContainer-Fallback",
                             LastUpdated = DateTime.Now
                         };
                     }
@@ -156,25 +221,137 @@ namespace WirelessBatteryLevel.Infrastructure.Battery
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(
-                    $"[ClassicBatteryProvider] Truy vấn qua {sourceLabel} " +
-                    $"lỗi cho {device.Name}: {ex.Message}");
+                Debug.WriteLine($"[ClassicBatteryProvider] Query Container error for {device.Name}: {ex.Message}");
             }
 
             return null;
         }
 
-        private static string BuildAqsFilter(WirelessDevice device)
+        private async Task<BatteryInfo?> QueryDeviceNodeBatteryAsync(
+            WirelessDevice device,
+            Guid? containerId,
+            string[] requestedProperties,
+            CancellationToken cancellationToken)
         {
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                // 1. Targeted AQS query by ContainerId or Name for PnP Device Nodes
+                string aqsFilter = BuildDeviceNodeAqsFilter(device, containerId);
+                if (!string.IsNullOrEmpty(aqsFilter))
+                {
+                    var devices = await DeviceInformation.FindAllAsync(
+                        aqsFilter, requestedProperties, DeviceInformationKind.Device);
+
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    foreach (var devInfo in devices)
+                    {
+                        if (IsDeviceMatch(devInfo, device))
+                        {
+                            if (TryExtractBatteryLevel(devInfo, out var batteryLevel))
+                            {
+                                return new BatteryInfo
+                                {
+                                    Level = batteryLevel,
+                                    IsAvailable = true,
+                                    Source = "ClassicBluetooth-DeviceNode",
+                                    LastUpdated = DateTime.Now
+                                };
+                            }
+                        }
+                    }
+                }
+
+                // 2. Fallback: Full scan if targeted query returned empty
+                var fallbackDevices = await DeviceInformation.FindAllAsync(
+                    "", requestedProperties, DeviceInformationKind.Device);
+                foreach (var devInfo in fallbackDevices)
+                {
+                    if (IsDeviceMatch(devInfo, device) && TryExtractBatteryLevel(devInfo, out var batteryLevel))
+                    {
+                        return new BatteryInfo
+                        {
+                            Level = batteryLevel,
+                            IsAvailable = true,
+                            Source = "ClassicBluetooth-DeviceNode-Fallback",
+                            LastUpdated = DateTime.Now
+                        };
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[ClassicBatteryProvider] Query DeviceNode error for {device.Name}: {ex.Message}");
+            }
+
+            return null;
+        }
+
+        private static string BuildAepAqsFilter(WirelessDevice device)
+        {
+            var filters = new List<string>();
+
             if (!string.IsNullOrWhiteSpace(device.Address))
             {
-                return $"System.Devices.Aep.DeviceAddress:=\"{device.Address}\"";
+                var addressFormats = GetAddressFormats(device.Address);
+                foreach (var fmt in addressFormats)
+                {
+                    if (fmt.Contains(":"))
+                    {
+                        filters.Add($"System.Devices.Aep.DeviceAddress:=\"{fmt}\"");
+                    }
+                }
             }
+
+            if (!string.IsNullOrWhiteSpace(device.Name))
+            {
+                filters.Add($"System.ItemNameDisplay:=\"{device.Name}\"");
+            }
+
+            return filters.Count > 0 ? string.Join(" OR ", filters) : "";
+        }
+
+        private static string BuildContainerAqsFilter(WirelessDevice device, Guid? containerId)
+        {
+            if (containerId.HasValue && containerId.Value != Guid.Empty)
+            {
+                return $"System.Devices.ContainerId:=\"{{{containerId.Value}}}\"";
+            }
+
             if (!string.IsNullOrWhiteSpace(device.Name))
             {
                 return $"System.ItemNameDisplay:=\"{device.Name}\"";
             }
+
             return "";
+        }
+
+        private static string BuildDeviceNodeAqsFilter(WirelessDevice device, Guid? containerId)
+        {
+            if (containerId.HasValue && containerId.Value != Guid.Empty)
+            {
+                return $"System.Devices.ContainerId:=\"{{{containerId.Value}}}\"";
+            }
+
+            if (!string.IsNullOrWhiteSpace(device.Name))
+            {
+                return $"System.ItemNameDisplay:=\"{device.Name}\"";
+            }
+
+            return "";
+        }
+
+        private static Guid? ExtractContainerId(DeviceInformation devInfo)
+        {
+            if (devInfo.Properties != null &&
+                devInfo.Properties.TryGetValue(ContainerIdKey, out var val) &&
+                val is Guid g && g != Guid.Empty)
+            {
+                return g;
+            }
+            return null;
         }
 
         private static bool TryExtractBatteryLevel(
