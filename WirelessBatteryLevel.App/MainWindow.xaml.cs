@@ -124,12 +124,6 @@ namespace WirelessBatteryLevel.App
                 return;
             }
 
-            // Trigger instant refresh on opening context menu
-            if (_viewModel.RefreshCommand.CanExecute(null))
-            {
-                _viewModel.RefreshCommand.Execute(null);
-            }
-
             if (sender is System.Windows.Controls.Button settingsBtn)
             {
                 var contextMenu = CreateSettingsContextMenu(includeExitItem: false);
@@ -148,12 +142,6 @@ namespace WirelessBatteryLevel.App
             {
                 CloseActiveContextMenu();
                 return;
-            }
-
-            // Trigger instant refresh on opening context menu
-            if (_viewModel.RefreshCommand.CanExecute(null))
-            {
-                _viewModel.RefreshCommand.Execute(null);
             }
 
             if (sender is FrameworkElement cardElement && cardElement.DataContext is DeviceItemViewModel vm)

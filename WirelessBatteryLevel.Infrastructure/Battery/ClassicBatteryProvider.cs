@@ -37,7 +37,7 @@ namespace WirelessBatteryLevel.Infrastructure.Battery
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (!CanHandle(device))
+            if (!CanHandle(device) || !device.IsConnected)
                 return null;
 
             var requestedProperties = new[]

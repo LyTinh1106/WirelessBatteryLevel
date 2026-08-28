@@ -63,7 +63,7 @@ namespace WirelessBatteryLevel.Infrastructure.Device
 
         private async Task FastConnectionMonitorLoopAsync(CancellationToken cancellationToken)
         {
-            using var fastTimer = new PeriodicTimer(TimeSpan.FromSeconds(5));
+            using var fastTimer = new PeriodicTimer(TimeSpan.FromSeconds(10));
 
             try
             {

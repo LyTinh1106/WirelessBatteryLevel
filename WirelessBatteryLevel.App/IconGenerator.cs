@@ -29,15 +29,28 @@ namespace WirelessBatteryLevel.App
             }
         }
 
+        private static ImageSource? _cachedWpfIconSource;
+
         public static ImageSource GetWpfIconSource()
         {
+            if (_cachedWpfIconSource != null)
+                return _cachedWpfIconSource;
+
             using var icon = CreateZtkIconInstance();
             try
             {
-                return System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(
+                var bmpSource = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(
                     icon.Handle,
                     System.Windows.Int32Rect.Empty,
                     BitmapSizeOptions.FromEmptyOptions());
+
+                if (bmpSource.CanFreeze)
+                {
+                    bmpSource.Freeze();
+                }
+
+                _cachedWpfIconSource = bmpSource;
+                return _cachedWpfIconSource;
             }
             catch
             {

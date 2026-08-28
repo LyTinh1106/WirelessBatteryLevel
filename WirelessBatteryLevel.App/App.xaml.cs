@@ -91,6 +91,7 @@ namespace WirelessBatteryLevel.App
                 Current.Dispatcher.Invoke(() =>
                 {
                     UpdateTrayIconState(statuses, mainWindow);
+                    MemoryCleaner.TrimWorkingSet();
                 });
             };
 
@@ -143,8 +144,13 @@ namespace WirelessBatteryLevel.App
                 var connectedDevices = System.Linq.Enumerable.ToList(
                     System.Linq.Enumerable.Where(statuses, s => s.Device.IsConnected));
 
-                // 1. Keep Main NotifyIcon with standard app icon
+                // 1. Keep Main NotifyIcon with standard app icon and dispose previous icon handle
+                var oldMainIcon = _notifyIcon.Icon;
                 _notifyIcon.Icon = IconGenerator.CreateZtkIconInstance();
+                if (oldMainIcon != null && oldMainIcon != System.Drawing.SystemIcons.Application)
+                {
+                    oldMainIcon.Dispose();
+                }
                 _notifyIcon.Text = "Wireless Battery Level (ZTK)";
 
                 // 2. Handle Pinned Device NotifyIcons (Optional feature, Default = OFF)

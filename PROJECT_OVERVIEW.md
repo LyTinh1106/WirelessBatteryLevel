@@ -3,7 +3,7 @@
 ## 1. Giới Thiệu Dự Án
 **Wireless Battery Level (WBL)** là ứng dụng desktop Windows gọn nhẹ, hiện đại được viết bằng C# .NET 8 và WPF, giúp người dùng dễ dàng theo dõi phần trăm pin của các thiết bị không dây kết nối qua Bluetooth (Classic Bluetooth và Bluetooth Low Energy - BLE) ngay trên thanh Taskbar / System Tray.
 
-### Phiên bản hiện tại: **v1.2.3**
+### Phiên bản hiện tại: **v1.2.4**
 
 ### Kiến Trúc Dự Án (Clean Architecture 3 Lớp)
 * **WirelessBatteryLevel.Core**: Chứa các interface cơ bản (`IDeviceDiscovery`, `IBatteryProvider`, `IDeviceManager`) và các Data Model (`WirelessDevice`, `BatteryInfo`, `DeviceStatus`, `DeviceSource`).
@@ -16,7 +16,7 @@
 
 ```mermaid
 flowchart TD
-    A[Khởi động ứng dụng App.xaml.cs v1.2.3] --> B[Nạp System Accent Color & AppSettingsService]
+    A[Khởi động ứng dụng App.xaml.cs v1.2.4] --> B[Nạp System Accent Color & AppSettingsService]
     B --> C[Khởi tạo Tray Icon ZTK Main & MainWindow]
     C --> D[Chạy DeviceMonitor.StartAsync]
     
@@ -94,7 +94,7 @@ flowchart TD
   * Tự động kích hoạt refresh nhanh tức thì khi nhấn Refresh hoặc mở cửa sổ/menu.
 * **Footer**:
   * Hiển thị thời gian cập nhật gần nhất ("Updated at: HH:mm:ss").
-  * Hiển thị phiên bản ứng dụng ("v1.2.3").
+  * Hiển thị phiên bản ứng dụng ("v1.2.4").
 
 ---
 
