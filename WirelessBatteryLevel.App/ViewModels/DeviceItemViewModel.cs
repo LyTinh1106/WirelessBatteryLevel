@@ -10,12 +10,6 @@ using SolidColorBrush = System.Windows.Media.SolidColorBrush;
 
 namespace WirelessBatteryLevel.App.ViewModels
 {
-    public enum RingSubMode
-    {
-        ProgressArc,
-        RiseUp
-    }
-
     public class DeviceItemViewModel : INotifyPropertyChanged
     {
         private static readonly Brush GreenStatusBrush = CreateFrozenBrush("#22C55E");
@@ -33,8 +27,6 @@ namespace WirelessBatteryLevel.App.ViewModels
         }
 
         private DeviceStatus _status;
-        private BatteryDisplayStyle _displayStyle = BatteryDisplayStyle.ClassicBattery;
-        private RingSubMode _ringSubMode = RingSubMode.ProgressArc;
 
         public DeviceItemViewModel(DeviceStatus status)
         {
@@ -42,6 +34,7 @@ namespace WirelessBatteryLevel.App.ViewModels
             AppSettingsService.Instance.SettingsChanged += (s, e) =>
             {
                 OnPropertyChanged(nameof(BatteryFillBrush));
+                OnPropertyChanged(nameof(IndicatorBrush));
                 OnPropertyChanged(nameof(IsMonochromeMode));
             };
             UpdateFromStatus(status);
@@ -62,7 +55,31 @@ namespace WirelessBatteryLevel.App.ViewModels
 
         public bool IsConnected => _status.Device.IsConnected;
 
-        public Brush IndicatorBrush => IsConnected ? GreenBatteryBrush : GrayBrush;
+        public Brush IndicatorBrush
+        {
+            get
+            {
+                if (!IsConnected)
+                {
+                    return GrayBrush;
+                }
+
+                if (AppSettingsService.Instance.BatteryColorMode == BatteryColorMode.DefaultWhite)
+                {
+                    return WhiteBatteryBrush;
+                }
+
+                if (HasBattery && BatteryLevel.HasValue)
+                {
+                    var level = BatteryLevel.Value;
+                    if (level > 50) return GreenBatteryBrush;
+                    if (level >= 20) return YellowBatteryBrush;
+                    return RedBatteryBrush;
+                }
+
+                return GreenBatteryBrush;
+            }
+        }
 
         public string FullTooltipText => $"{Name} - {(SourceText == "BLE" ? "Bluetooth LE" : "Classic Bluetooth")}";
 
@@ -78,48 +95,7 @@ namespace WirelessBatteryLevel.App.ViewModels
 
         public string BatteryTooltip => HasBattery ? $"{BatteryLevel}%" : "0%";
 
-        public BatteryDisplayStyle DisplayStyle
-        {
-            get => _displayStyle;
-            set
-            {
-                if (_displayStyle != value)
-                {
-                    _displayStyle = value;
-                    OnPropertyChanged(nameof(DisplayStyle));
-                    OnPropertyChanged(nameof(IsLinearBarMode));
-                    OnPropertyChanged(nameof(IsRingGaugeMode));
-                    OnPropertyChanged(nameof(IsClassicMode));
-                }
-            }
-        }
 
-        public RingSubMode RingSubMode
-        {
-            get => _ringSubMode;
-            set
-            {
-                if (_ringSubMode != value)
-                {
-                    _ringSubMode = value;
-                    OnPropertyChanged(nameof(RingSubMode));
-                    OnPropertyChanged(nameof(IsRiseUpSubMode));
-                }
-            }
-        }
-
-        public bool IsRiseUpSubMode => RingSubMode == RingSubMode.RiseUp;
-
-        public void ToggleRingSubMode()
-        {
-            RingSubMode = (RingSubMode == RingSubMode.ProgressArc) ? RingSubMode.RiseUp : RingSubMode.ProgressArc;
-        }
-
-        public bool IsLinearBarMode => DisplayStyle == BatteryDisplayStyle.LinearCapsuleBar;
-
-        public bool IsRingGaugeMode => DisplayStyle == BatteryDisplayStyle.CircularRingGauge;
-
-        public bool IsClassicMode => DisplayStyle == BatteryDisplayStyle.ClassicBattery;
 
         public bool IsMonochromeMode => AppSettingsService.Instance.BatteryColorMode == BatteryColorMode.DefaultWhite;
 

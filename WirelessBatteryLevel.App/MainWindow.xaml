@@ -6,7 +6,7 @@
         xmlns:controls="clr-namespace:WirelessBatteryLevel.App.Controls"
         mc:Ignorable="d"
         Title="Wireless Battery Level" 
-        Height="380" Width="340"
+        Height="310" Width="280"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
@@ -79,7 +79,7 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Bluetooth App Logo (Win10 White Icon, Hover System Accent) -->
+                <!-- Bluetooth App Logo -->
                 <Path Grid.Column="0"
                       Data="M 10 2 L 10 24 L 17 17 L 12 12.5 L 17 8 L 10 2 M 10 12.5 L 4 6.5 M 10 12.5 L 4 18.5"
                       Fill="Transparent" 
@@ -100,18 +100,18 @@
                                FontSize="13.5" 
                                VerticalAlignment="Center"/>
 
-                    <!-- Author Subtitle (Hover System Accent) -->
+                    <!-- Author Subtitle -->
                     <TextBlock Text="Made by Ztk" 
                                Style="{StaticResource SubtitleHoverStyle}"
                                FontSize="9.5" 
                                VerticalAlignment="Bottom" 
                                Margin="6,0,0,2"
-                               ToolTip="Author"/>
+                               ToolTip="Made by Ztk"/>
                 </StackPanel>
 
-                <!-- Action Buttons (Refresh, Settings & Close - CornerRadius="0" No rounded corners) -->
+                <!-- Action Buttons -->
                 <StackPanel Grid.Column="2" HorizontalAlignment="Right" Orientation="Horizontal" VerticalAlignment="Center">
-                    <!-- Refresh Button (Hover System Accent, CornerRadius=0) -->
+                    <!-- Refresh Button -->
                     <Button Command="{Binding RefreshCommand}"
                             Background="Transparent"
                             BorderThickness="0"
@@ -134,7 +134,7 @@
                         </Button.Template>
                     </Button>
 
-                    <!-- Settings Button (Hover System Accent, CornerRadius=0) -->
+                    <!-- Settings Button -->
                     <Button Click="SettingsButton_Click"
                             Background="Transparent"
                             BorderThickness="0"
@@ -183,7 +183,7 @@
                     </TextBlock.Style>
                 </TextBlock>
 
-                <!-- Devices ItemsControl (Card Height scaled 1.5x, component sizes enlarged) -->
+                <!-- Devices ItemsControl -->
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <ItemsControl ItemsSource="{Binding Devices}">
                         <ItemsControl.ItemTemplate>
@@ -191,59 +191,33 @@
                                 <Border Margin="0,0,0,6" 
                                         BorderThickness="0"
                                         CornerRadius="2" 
-                                        Cursor="Hand"
-                                        MouseRightButtonUp="DeviceCard_MouseRightButtonUp"
                                         SnapsToDevicePixels="True">
                                     <Border.Style>
                                         <Style TargetType="Border">
                                             <Setter Property="Background" Value="#2B2B2B"/>
                                             <Style.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="#38383B"/>
+                                                    <Setter Property="Background" Value="#343437"/>
                                                 </Trigger>
                                             </Style.Triggers>
                                         </Style>
                                     </Border.Style>
                                     <Grid>
                                         <Grid.ColumnDefinitions>
-                                            <!-- Left Accent Indicator Bar (Green if connected, Gray otherwise) -->
+                                            <!-- Left Accent Indicator Bar -->
                                             <ColumnDefinition Width="5"/>
                                             <!-- Card Main Content -->
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
 
-                                        <!-- 5px Indicator Bar with Hover Brightness Glow -->
+                                        <!-- 5px Indicator Bar -->
                                         <Grid Grid.Column="0">
                                             <Rectangle Fill="{Binding IndicatorBrush}" SnapsToDevicePixels="True"/>
-                                            <Rectangle SnapsToDevicePixels="True">
-                                                <Rectangle.Style>
-                                                    <Style TargetType="Rectangle">
-                                                        <Setter Property="Fill" Value="#FFFFFF"/>
-                                                        <Setter Property="Opacity" Value="0"/>
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Border}}" Value="True">
-                                                                <Setter Property="Opacity" Value="0.3"/>
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Rectangle.Style>
-                                            </Rectangle>
                                         </Grid>
 
-                                        <!-- Content Grid with Dynamic Single-Row or 2-Row Layout -->
+                                        <!-- Content Grid -->
                                         <Grid Grid.Column="1" Margin="12,10">
-                                            <!-- Single-Row Layout (Classic Battery Mode) -->
                                             <Grid x:Name="ClassicLayout">
-                                                <Grid.Style>
-                                                    <Style TargetType="Grid">
-                                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding IsClassicMode}" Value="True">
-                                                                <Setter Property="Visibility" Value="Visible"/>
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Grid.Style>
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*"/>
                                                     <ColumnDefinition Width="Auto"/>
@@ -270,86 +244,6 @@
                                                     <controls:BatteryIcon VerticalAlignment="Center"/>
                                                 </StackPanel>
                                             </Grid>
-
-                                            <!-- Expanded 2-Row Layout (Linear Segmented LED Bar Mode) -->
-                                             <!-- Expanded 2-Row Layout (Linear Segmented LED Bar Mode) -->
-                                             <Grid x:Name="SegmentedBarLayout">
-                                                 <Grid.Style>
-                                                     <Style TargetType="Grid">
-                                                         <Setter Property="Visibility" Value="Collapsed"/>
-                                                         <Style.Triggers>
-                                                             <DataTrigger Binding="{Binding IsLinearBarMode}" Value="True">
-                                                                 <Setter Property="Visibility" Value="Visible"/>
-                                                             </DataTrigger>
-                                                         </Style.Triggers>
-                                                     </Style>
-                                                 </Grid.Style>
-                                                 <Grid.RowDefinitions>
-                                                     <!-- Row 0: Device Name (Left) + Percentage (Right) -->
-                                                     <RowDefinition Height="Auto"/>
-                                                     <!-- Row 1: Segmented LED Bar (Full Width Bottom) -->
-                                                     <RowDefinition Height="Auto"/>
-                                                 </Grid.RowDefinitions>
-
-                                                 <!-- Row 0 -->
-                                                 <Grid Grid.Row="0" Margin="0,0,0,8">
-                                                     <Grid.ColumnDefinitions>
-                                                         <ColumnDefinition Width="*"/>
-                                                         <ColumnDefinition Width="Auto"/>
-                                                     </Grid.ColumnDefinitions>
-
-                                                     <TextBlock Grid.Column="0" 
-                                                                Text="{Binding Name}" 
-                                                                Style="{StaticResource AccentTextHoverStyle}"
-                                                                FontSize="13.5" 
-                                                                FontWeight="SemiBold"
-                                                                TextTrimming="CharacterEllipsis" 
-                                                                ToolTip="{Binding FullTooltipText}"
-                                                                VerticalAlignment="Center"/>
-
-                                                     <TextBlock Grid.Column="1" 
-                                                                Text="{Binding BatteryPercentageText}" 
-                                                                Style="{StaticResource AccentTextHoverStyle}"
-                                                                FontSize="13" 
-                                                                FontWeight="Bold" 
-                                                                VerticalAlignment="Center"
-                                                                ToolTip="{Binding BatteryTooltip}"/>
-                                                 </Grid>
-
-                                                 <!-- Row 1: Full-Width Segmented LED Bar -->
-                                                 <controls:SegmentedBarIcon Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-                                             </Grid>
-
-                                             <!-- Single-Row Expanded Layout (Circular Ring Gauge Mode) -->
-                                             <Grid x:Name="RingGaugeLayout">
-                                                 <Grid.Style>
-                                                     <Style TargetType="Grid">
-                                                         <Setter Property="Visibility" Value="Collapsed"/>
-                                                         <Style.Triggers>
-                                                             <DataTrigger Binding="{Binding IsRingGaugeMode}" Value="True">
-                                                                 <Setter Property="Visibility" Value="Visible"/>
-                                                             </DataTrigger>
-                                                         </Style.Triggers>
-                                                     </Style>
-                                                 </Grid.Style>
-                                                 <Grid.ColumnDefinitions>
-                                                     <ColumnDefinition Width="*"/>
-                                                     <ColumnDefinition Width="Auto"/>
-                                                 </Grid.ColumnDefinitions>
-
-                                                 <!-- Left: Device Name (Vertically Centered) -->
-                                                 <TextBlock Grid.Column="0" 
-                                                            Text="{Binding Name}" 
-                                                            Style="{StaticResource AccentTextHoverStyle}"
-                                                            FontSize="13.5" 
-                                                            FontWeight="SemiBold"
-                                                            TextTrimming="CharacterEllipsis" 
-                                                            ToolTip="{Binding FullTooltipText}"
-                                                            VerticalAlignment="Center"/>
-
-                                                 <!-- Right: Circular Ring Gauge (Percent Centered Inside Ring) -->
-                                                 <controls:CircularRingIcon Grid.Column="1" VerticalAlignment="Center"/>
-                                             </Grid>
                                         </Grid>
                                     </Grid>
                                 </Border>
@@ -361,14 +255,14 @@
 
             <!-- Footer Panel -->
             <Grid Grid.Row="3" Margin="0,8,0,0">
-                <!-- Left: Last Updated Subtitle (Hover System Accent) -->
+                <!-- Left: Last Updated Subtitle -->
                 <TextBlock Text="{Binding LastUpdatedText}" 
                            Style="{StaticResource SubtitleHoverStyle}"
                            FontSize="9.5" 
                            HorizontalAlignment="Left" 
                            VerticalAlignment="Center"/>
 
-                <!-- Right: Version Subtitle (Hover System Accent) -->
+                <!-- Right: Version Subtitle -->
                 <TextBlock Text="{Binding AppVersionText}" 
                            Style="{StaticResource SubtitleHoverStyle}"
                            FontSize="9.5" 

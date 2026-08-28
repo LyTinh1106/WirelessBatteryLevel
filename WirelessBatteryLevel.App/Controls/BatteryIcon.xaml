@@ -13,48 +13,36 @@
     <UserControl.Resources>
         <local:BatteryWidthConverter x:Key="WidthConverter"/>
 
-        <!-- Battery Outer Outline Hover System Accent Style (Zero Position/Ratio Modification) -->
+        <!-- Battery Outer Outline Static Style -->
         <Style x:Key="BatteryOutlineHoverStyle" TargetType="Rectangle">
             <Setter Property="Stroke" Value="#D1D5DB"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
-                    <Setter Property="Stroke" Value="{DynamicResource SystemAccentBrush}"/>
-                </DataTrigger>
-            </Style.Triggers>
         </Style>
 
-        <!-- Battery Stud Terminal Hover System Accent Style (Zero Position/Ratio Modification) -->
+        <!-- Battery Stud Terminal Static Style -->
         <Style x:Key="BatteryStudHoverStyle" TargetType="Rectangle">
             <Setter Property="Fill" Value="#D1D5DB"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
-                    <Setter Property="Fill" Value="{DynamicResource SystemAccentBrush}"/>
-                </DataTrigger>
-            </Style.Triggers>
         </Style>
     </UserControl.Resources>
 
     <Grid ToolTip="{Binding BatteryTooltip}" Background="Transparent" SnapsToDevicePixels="True">
         <!-- SVG Vector Windows 10 Native Battery Icon Container -->
         <Canvas Width="36" Height="18" HorizontalAlignment="Center" VerticalAlignment="Center" SnapsToDevicePixels="True">
-            <!-- Outer Battery Outline (Position & Ratios Untouched, Stroke Changes to System Accent on Hover) -->
+            <!-- Outer Battery Outline -->
             <Rectangle Canvas.Left="1" Canvas.Top="2" Width="32" Height="17"
                        Style="{StaticResource BatteryOutlineHoverStyle}"
                        StrokeThickness="1"
                        Fill="Transparent"
                        SnapsToDevicePixels="True" HorizontalAlignment="Center" VerticalAlignment="Top"/>
 
-            <!-- Solid Battery Stud / Nipple Terminal on Right (Position & Ratios Untouched, Fill Changes to System Accent on Hover) -->
+            <!-- Solid Battery Stud / Nipple Terminal on Right -->
             <Rectangle Canvas.Left="33" Canvas.Top="7" Width="2" Height="5"
                        Style="{StaticResource BatteryStudHoverStyle}"
                        SnapsToDevicePixels="True" HorizontalAlignment="Left" VerticalAlignment="Center"/>
 
-            <!-- Inner Dynamic Fill Bar (Adjusted to 27px for Perfectly Balanced Right Gap at 100%) -->
+            <!-- Inner Dynamic Fill Bar -->
             <Border Canvas.Left="3" Canvas.Top="3" Height="13" CornerRadius="0" ClipToBounds="True" SnapsToDevicePixels="True">
                 <Grid Width="27">
-                    <!-- Base Fill Bar (Accent on hover in Monochrome Mode, Dynamic Color in Color Mode) -->
+                    <!-- Base Fill Bar -->
                     <Rectangle HorizontalAlignment="Left"
                                Height="12"
                                SnapsToDevicePixels="True">
@@ -68,42 +56,6 @@
                                         </MultiBinding>
                                     </Setter.Value>
                                 </Setter>
-                                <Style.Triggers>
-                                    <!-- In Monochrome Mode: Change fill to SystemAccentBrush on hover -->
-                                    <MultiDataTrigger>
-                                        <MultiDataTrigger.Conditions>
-                                            <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Border}}" Value="True"/>
-                                            <Condition Binding="{Binding IsMonochromeMode}" Value="True"/>
-                                        </MultiDataTrigger.Conditions>
-                                        <Setter Property="Fill" Value="{DynamicResource SystemAccentBrush}"/>
-                                    </MultiDataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Rectangle.Style>
-                    </Rectangle>
-
-                    <!-- White Brightness Overlay (Brightens dynamic color by 35% on hover in Color Mode) -->
-                    <Rectangle HorizontalAlignment="Left" Fill="#FFFFFF" Height="12" SnapsToDevicePixels="True">
-                        <Rectangle.Style>
-                            <Style TargetType="Rectangle">
-                                <Setter Property="Width">
-                                    <Setter.Value>
-                                        <MultiBinding Converter="{StaticResource WidthConverter}" ConverterParameter="27">
-                                            <Binding Path="BatteryLevelWidthRatio" />
-                                        </MultiBinding>
-                                    </Setter.Value>
-                                </Setter>
-                                <Setter Property="Opacity" Value="0"/>
-                                <Style.Triggers>
-                                    <!-- In Color Mode: Brighten existing dynamic color on hover -->
-                                    <MultiDataTrigger>
-                                        <MultiDataTrigger.Conditions>
-                                            <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Border}}" Value="True"/>
-                                            <Condition Binding="{Binding IsMonochromeMode}" Value="False"/>
-                                        </MultiDataTrigger.Conditions>
-                                        <Setter Property="Opacity" Value="0.35"/>
-                                    </MultiDataTrigger>
-                                </Style.Triggers>
                             </Style>
                         </Rectangle.Style>
                     </Rectangle>

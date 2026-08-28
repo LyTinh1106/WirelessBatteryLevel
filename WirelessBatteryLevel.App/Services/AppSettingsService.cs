@@ -8,13 +8,6 @@ namespace WirelessBatteryLevel.App.Services
         DynamicColors
     }
 
-    public enum BatteryDisplayStyle
-    {
-        ClassicBattery,
-        LinearCapsuleBar,
-        CircularRingGauge
-    }
-
     public class AppSettingsService
     {
         private static readonly Lazy<AppSettingsService> _instance = new(() => new AppSettingsService());
@@ -22,8 +15,7 @@ namespace WirelessBatteryLevel.App.Services
 
         private int _autoCloseSeconds = 60;
         private int _refreshIntervalSeconds = 60;
-        private BatteryColorMode _batteryColorMode = BatteryColorMode.DynamicColors;
-        private BatteryDisplayStyle _batteryDisplayStyle = BatteryDisplayStyle.ClassicBattery;
+        private BatteryColorMode _batteryColorMode = BatteryColorMode.DefaultWhite;
         private bool _isPinToTrayEnabled = false;
 
         public event EventHandler? SettingsChanged;
@@ -84,18 +76,7 @@ namespace WirelessBatteryLevel.App.Services
             }
         }
 
-        public BatteryDisplayStyle BatteryDisplayStyle
-        {
-            get => _batteryDisplayStyle;
-            set
-            {
-                if (_batteryDisplayStyle != value)
-                {
-                    _batteryDisplayStyle = value;
-                    OnSettingsChanged();
-                }
-            }
-        }
+
 
         private void OnSettingsChanged()
         {

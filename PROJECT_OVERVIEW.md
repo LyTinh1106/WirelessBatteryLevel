@@ -3,12 +3,12 @@
 ## 1. Giới Thiệu Dự Án
 **Wireless Battery Level (WBL)** là ứng dụng desktop Windows gọn nhẹ, hiện đại được viết bằng C# .NET 8 và WPF, giúp người dùng dễ dàng theo dõi phần trăm pin của các thiết bị không dây kết nối qua Bluetooth (Classic Bluetooth và Bluetooth Low Energy - BLE) ngay trên thanh Taskbar / System Tray.
 
-### Phiên bản hiện tại: **v1.2.4**
+### Phiên bản hiện tại: **v1.3.0 (Compact Version)**
 
 ### Kiến Trúc Dự Án (Clean Architecture 3 Lớp)
 * **WirelessBatteryLevel.Core**: Chứa các interface cơ bản (`IDeviceDiscovery`, `IBatteryProvider`, `IDeviceManager`) và các Data Model (`WirelessDevice`, `BatteryInfo`, `DeviceStatus`, `DeviceSource`).
 * **WirelessBatteryLevel.Infrastructure**: Xử lý việc giao tiếp với phần cứng Windows (quét thiết bị Bluetooth LE / Classic, đọc dữ liệu GATT BLE, truy vấn Windows PnP Properties cho Classic Bluetooth, quản lý bộ nhớ đệm `DeviceStateCache` và tiến trình giám sát `DeviceMonitor`).
-* **WirelessBatteryLevel.App**: Tầng giao diện WPF, quản lý System Tray Icon, Cửa sổ hiển thị Flyout Popup (`MainWindow`), ViewModels (`TrayViewModel`, `DeviceItemViewModel`), Custom Controls (`BatteryIcon`, `SegmentedBarIcon`, `CircularRingIcon`) và cài đặt ứng dụng (`AppSettingsService`).
+* **WirelessBatteryLevel.App**: Tầng giao diện WPF, quản lý System Tray Icon, Cửa sổ hiển thị Flyout Popup tinh gọn (`MainWindow`), ViewModels (`TrayViewModel`, `DeviceItemViewModel`), Custom Controls (`BatteryIcon`) và cài đặt ứng dụng (`AppSettingsService`).
 
 ---
 
@@ -16,7 +16,7 @@
 
 ```mermaid
 flowchart TD
-    A[Khởi động ứng dụng App.xaml.cs v1.2.4] --> B[Nạp System Accent Color & AppSettingsService]
+    A[Khởi động ứng dụng App.xaml.cs v1.3.0 Compact] --> B[Nạp System Accent Color & AppSettingsService]
     B --> C[Khởi tạo Tray Icon ZTK Main & MainWindow]
     C --> D[Chạy DeviceMonitor.StartAsync]
     
@@ -57,54 +57,18 @@ flowchart TD
 
 ---
 
-## 3. Các Chức Năng Liên Quan Đến UI
+## 3. Các Đặc Điểm Phiên Bản Compact (Compact Version Features)
 
-### 3.1 Cửa Sổ Popup Flyout & System Tray (Tray Window & Popups)
+### 3.1 Giao Diện & Kích Thước Tinh Gọn (Compact UI)
+* **Kích thước cửa sổ Flyout (`280x310px`)**: Thu nhỏ chiều rộng và chiều cao tổng thể của cửa sổ chính, giúp thẻ card thiết bị hiển thị thon gọn và vừa vặn ở góc màn hình.
+* **Giữ nguyên font chữ & tỉ lệ gốc**: Cỡ chữ và biểu tượng icon được giữ nguyên tỉ lệ sắc nét chuẩn Windows 10 Native.
+* **Loại bỏ hiệu ứng Hover thừa**: Giữ phong cách tĩnh phẳng tối giản cho các nhãn tĩnh (Bluetooth Icon, Title, Author, Timestamp, Version, Device Name & Battery Percentage).
 
-#### A. Cửa sổ Flyout Popup chính (`MainWindow`)
-* **Thiết kế chuẩn Windows 10 Native**: Cửa sổ không viền (`WindowStyle="None"`), trong suốt (`AllowsTransparency="True"`), luôn nằm trên cùng (`Topmost="True"`), góc vuông sắc nét (`CornerRadius="0"`), tông màu tối Dark Theme (`#1F1F1F`).
-* **Vị trí hiển thị tự động (`PositionNearTray`)**: Tự động tính toán vị trí góc dưới bên phải màn hình, nằm khít trên thanh Taskbar Windows (`SystemParameters.WorkArea`).
-* **Tương tác với System Tray Icon (`NotifyIcon`)**:
-  * **Click chuột trái**: Bật/Tắt (Toggle) ẩn hiện cửa sổ Flyout Popup.
-  * **Click chuột phải**: Mở Menu Cài Đặt (WPF ContextMenu) theo vị trí con trỏ chuột. Tooltip mặc định hiển thị `"Wireless Battery Level (ZTK)"`.
+### 3.2 Hệ Thống Hiển Thị Pin & Context Menu
+1. **Dạng viên pin Classic duy nhất**: Tinh giản loại bỏ các kiểu hiển thị phụ (Linear Capsule Bar & Circular Ring Gauge) để ứng dụng siêu gọn nhẹ.
+2. **Default Mode (Màu sắc mặc định)**: Mặc định hiển thị viên pin và indicator màu trắng khi kết nối.
+3. **Tích hợp ColorMode vào Left Side Indicator**:
+   - **Default Mode**: Dải chỉ báo cạnh trái màu trắng khi Connected, màu xám khi Disconnected.
+   - **Color Mode**: Dải chỉ báo cạnh trái phản ánh màu sắc dung lượng pin (Xanh `>50%`, Vàng `20-50%`, Đỏ `<20%`) khi Connected, màu xám khi Disconnected.
+4. **ContextMenu thu nhỏ**: Menu ở Tray Icon được tối ưu kích thước Padding (`5,3`) và Font Size (`11.5px`) siêu tiết kiệm diện tích.
 
-#### B. Chức Năng "Pin to Tray" (Multi-Icon Architecture - Optional)
-* **Chế độ Mặc định**: OFF (`IsPinToTrayEnabled = false`).
-* **Main Tray Icon**: Giữ nguyên Logo ZTK quen thuộc của ứng dụng.
-* **Khi Bật (ON)**: Ứng dụng tạo riêng từng `NotifyIcon` cho từng thiết bị connected. Mỗi thiết bị sở hữu 1 Icon pin Classic Monochrome dài & cao 32x32px nét 100% chuẩn pixel-perfect (`SmoothingMode.None`), căn giữa đối xứng 7px top/bottom.
-
-#### C. Menu Ngữ Cảnh (Win10 Context Menu & Auto-Close Timer 10s)
-* **Layout Cố Định Cột Icon (Fixed 22px Icon/Checkmark Column)**: Cột icon/checkmark quy định cố định 22px cho TẤT CẢ các mục menu, đảm bảo toàn bộ dòng chữ tiêu đề (Header Text) nằm thẳng hàng 100% từ trên xuống dưới, không bị lệch hay shift dòng.
-* **Thanh Phân Cách Separator**: Thiết kế tràn chiều rộng menu với khoảng lùi 6px tinh tế ở 2 đầu (`Margin="6,4,6,4"`).
-* **Menu Cài Đặt (Header / Tray Right-Click)**:
-  * **Pin Devices to System Tray**: Bật/Tắt chế độ ghim thiết bị ra Tray Icon.
-  * **Window Auto-Close Time**: Tùy chỉnh thời gian tự đóng Flyout Popup (15s, 30s, 45s, 1m, 2m).
-  * **Auto-Refresh Interval**: Tùy chỉnh chu kỳ tự động quét lại thiết bị (15s, 30s, 45s, 1m, 2m).
-  * **Battery Color Display Mode**: Chọn chế độ hiển thị màu sắc pin (Monochrome Mode / Color Mode).
-  * **Exit**: Thoát ứng dụng hoàn toàn.
-* **Menu Ngữ Cảnh Từng Thiết Bị (Right-Click vào Device Card)**:
-  * Chuyển đổi kiểu dáng hiển thị pin riêng biệt cho thiết bị (*Classic Battery*, *Linear Capsule Bar*, *Circular Ring Gauge*).
-* **Tính năng Auto-Close**: Tự động đóng menu sau 10 giây nếu người dùng không thao tác (`menuAutoCloseTimer = 10s`).
-
-#### D. Giao Diện Header & Footer
-* **Header**:
-  * Icon Bluetooth chuẩn Windows 10 (đổi sang System Accent khi rê chuột).
-  * Tiêu đề ứng dụng "Wireless Battery" & Tác giả "Made by Ztk".
-  * Nút Refresh & Nút Settings với hiệu ứng hover nền `#2D2D30` và đổi màu icon sang System Accent Color.
-  * Tự động kích hoạt refresh nhanh tức thì khi nhấn Refresh hoặc mở cửa sổ/menu.
-* **Footer**:
-  * Hiển thị thời gian cập nhật gần nhất ("Updated at: HH:mm:ss").
-  * Hiển thị phiên bản ứng dụng ("v1.2.4").
-
----
-
-## 3.2 Hiển Thị Dung Lượng Pin (Battery Display Systems)
-
-#### A. Chế Độ Màu Sắc Pin (`BatteryColorMode`)
-1. **Monochrome Mode (`DefaultWhite`)**: Icon pin màu trắng tối giản chuẩn phong cách Windows 10.
-2. **Color Mode (`DynamicColors`)**: Màu điền thay đổi động theo dung lượng pin (>50% Xanh Lá `#10B981`, 20-50% Vàng `#F59E0B`, <20% Đỏ `#EF4444`).
-
-#### B. 3 Kiểu Dáng Hiển Thị Pin (Battery Display Styles)
-* **1. Classic Battery**: Viên pin nằm ngang cổ điển có cực pin bên phải.
-* **2. Linear Capsule Bar**: Giao diện LED phân đoạn 5 Segment full-width.
-* **3. Circular Ring Gauge**: Vòng tròn đồng trục (57x57px) hiện đại hỗ trợ 2 Sub-Mode (*Progress Arc* & *Rise Up*).
